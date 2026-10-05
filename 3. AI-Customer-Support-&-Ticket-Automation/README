@@ -1,0 +1,41 @@
+# AI Customer Support Request Automation
+
+A hands-on Make.com project I built to practice using AI to classify customer support requests and route them safely.
+
+## What I Built
+
+The workflow receives a support request through a webhook and uses OpenAI to recommend a priority, category, action, summary, and reason.
+
+Make.com validates the returned values before deciding whether the request can continue or needs human review.
+
+## Workflow
+
+**Webhook → OpenAI → Parse JSON → Validation → Router → API / Human Review → Logging**
+
+### Key Logic
+
+- AI output is checked against predefined values.
+- Sensitive requests such as admin, credential, payroll, or server access are routed for human review.
+- Invalid output is also sent for review.
+- Valid normal requests can continue to the API step.
+- Each request receives a unique Request ID.
+- The request and result are logged in Google Sheets.
+
+## Tools Used
+
+- Make.com
+- OpenAI
+- Webhooks
+- JSON / Parse JSON
+- Routers & Filters
+- HTTP/API
+- Google Sheets
+- Gmail
+
+## What I Practiced
+
+This project helped me practice AI classification, validation, business rules, human-in-the-loop workflows, API requests, and logging.
+
+## Note
+
+This is a hands-on portfolio/training project. The API endpoint is a testing endpoint used to demonstrate the HTTP/API step rather than a real customer-support backend.

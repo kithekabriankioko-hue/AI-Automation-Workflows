@@ -1,0 +1,1573 @@
+{
+  "name": "AI Operations Request & Approval Automation",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": 3747237,
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": -13,
+          "name": "Receive Data"
+        },
+        "setupValidation": {
+          "result": {
+            "valid": true,
+            "fields": []
+          },
+          "version": 1,
+          "configuration": "91f4c12321da9c69"
+        },
+        "restore": {
+          "parameters": {
+            "hook": {
+              "data": {
+                "editable": "true"
+              },
+              "label": "AI Operations Request & Approval automation webhook"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hook",
+            "type": "hook:gateway-webhook",
+            "label": "Webhook",
+            "required": true
+          },
+          {
+            "name": "maxResults",
+            "type": "number",
+            "label": "Maximum number of results"
+          }
+        ],
+        "interface": [
+          {
+            "name": "employee_name",
+            "type": "text"
+          },
+          {
+            "name": "employee_email",
+            "type": "text"
+          },
+          {
+            "name": "department",
+            "type": "text"
+          },
+          {
+            "name": "request_type",
+            "type": "text"
+          },
+          {
+            "name": "request_description",
+            "type": "text"
+          },
+          {
+            "name": "estimated_cost",
+            "type": "text"
+          },
+          {
+            "name": "currency",
+            "type": "text"
+          },
+          {
+            "name": "urgency",
+            "type": "text"
+          },
+          {
+            "name": "manager_approval",
+            "type": "text"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "module": "openai-gpt-3:askAnything",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "model": "gpt-5-nano",
+        "textPrompt": "Analyze the operations request and approval automation using only the source data provided and return valid JSON only.\r\n\r\nSOURCE DATA:\r\n\r\nThe webhook request data is the source of truth. Do not invent, modify, replace, or substitute any source information.\r\n\r\nUse only the information contained in the employee's operations request when making classifications.\r\n\r\nemployee_name: {{1.employee_name}}\nemployee_email: {{1.employee_email}}\ndepartment: {{1.department}}\nrequest_type:{{1.request_type}}\nrequest_description: {{1.request_description}}\nestimated_cost:{{1.estimated_cost}}\ncurrency:{{1.currency}}\nurgency:{{1.urgency}}\nmanager_approval:{{1.manager_approval}}\n\n\nCLASSIFICATION RULES:\r\n\r\n1. CATEGORY\r\n\r\nChoose exactly one category that best matches the employee's operations request.\r\n\r\nAllowed values:\r\n\r\n- IT\r\n- FACILITIES\r\n- FINANCE\r\n- PROCUREMENT\r\n- OPERATIONS\r\n- TRAVEL\r\n- HR\r\n- SECURITY\r\n- OTHER\r\n\r\nDo not create new category values.\r\n\r\n2. PRIORITY\r\n\r\nThe priority must be exactly one of:\r\n\r\n- URGENT\r\n- HIGH\r\n- NORMAL\r\n- LOW\r\n\r\nDefinitions:\r\n\r\n- URGENT: Requires immediate attention.\r\n- HIGH: Requires prompt attention and may require immediate human, security, or compliance review depending on the risk and approval requirements.\r\n- NORMAL: An ordinary business request requiring attention without immediate escalation.\r\n- LOW: A routine, informational, or non-urgent request that can reasonably be handled without urgency.\r\n\r\nDo not determine priority solely from the estimated cost.\r\n\r\n3. RISK_LEVEL: LOW, MEDIUM, or HIGH.\r\n\r\nLOW:\r\nNo significant operational, security, financial, compliance, or business risk is evident from the supplied information.\r\n\r\nMEDIUM:\r\nSome potential operational, security, financial, compliance, or business concern exists, but the request does not involve clearly sensitive access, privileged access, critical systems, or another explicitly high-risk activity.\r\n\r\nHIGH:\r\nThe supplied request explicitly involves privileged or administrator access, access to production/critical systems, sensitive security controls, or another clearly significant security, operational, financial, or compliance risk.\r\n\r\nDo not invent risks. Only classify a request as HIGH when the supplied information provides a clear basis for doing so.\r\n\r\n4. REQUIRES_APPROVAL\r\n\r\nThe value must be exactly one of:\r\n\r\n- YES\r\n- NO\r\n\r\nThe field manager_approval from the webhook indicates whether management approval has already been provided/required for this request according to the submitted request data.\r\n\r\nIf manager_approval = YES:\r\n- Treat management approval as already provided.\r\n- Do NOT set requires_approval = YES solely because the request has manager approval = YES.\r\n\r\nIf manager_approval = NO:\r\n- Treat this as the submitted indication that management approval is not provided/required.\r\n- Do NOT interpret manager_approval = NO as evidence that management approval is required.\r\n\r\nSet requires_approval = YES only when the nature of the request itself, based on the supplied information, reasonably indicates that management approval is required.\r\n\r\nDo not invent company approval policies, spending limits, thresholds, or procedures.\r\n\r\nIf the supplied information does not reasonably indicate that approval is required, set requires_approval = NO.\r\n\r\n5. RECOMMENDED_DEPARTMENT\r\n\r\nChoose the department that should reasonably handle the request based on its content.\r\n\r\nUse the department provided in the source data when it is appropriate.\r\n\r\nDo not invent a department that is unrelated to the request.\r\n\r\n6. RECOMMENDED_ACTION\r\n\r\nProvide a short, practical description of the recommended next action based only on the supplied information.\r\n\r\nDo not promise that an action has already been completed.\r\n\r\n7. ROUTING_DECISION\r\n\r\nThe routing decision must be exactly one of:\r\n\r\n- MANAGEMENT\r\n- AUTOMATIC\r\n- HIGH-RISK\r\n\r\nUse the following decision hierarchy:\r\n\r\nDECISION HIERARCHY:\r\n\r\n1. MANAGEMENT when requires_approval = YES.\r\n2. HIGH-RISK when requires_approval = NO AND risk_level = HIGH.\r\n3. AUTOMATIC when requires_approval = NO AND risk_level = LOW or MEDIUM.\r\n\r\nDo not set requires_approval = YES merely because manager_approval = NO.\r\n\r\nIf the request contains insufficient, contradictory, or unusable information and a safe routing decision cannot be determined, return HIGH-RISK.\r\n\r\nThe routing decision must follow the rules above regardless of whether the priority is URGENT, HIGH, NORMAL, or LOW.\r\n\r\n8. SUMMARY\r\n\r\nProvide a short, factual summary of the employee's operations request.\r\n\r\nDo not add information that was not provided.\r\n\r\n9. REASON\r\n\r\nProvide a short explanation of why the request received its category, priority, risk level, approval requirement, and routing decision.\r\n\r\nBase the explanation only on the supplied information.\r\n\r\n10. AUTOMATION_RESPONSE\r\n\r\nGenerate a professional and clear response appropriate for the determined routing decision.\r\n\r\nDo not claim that a request has been approved, rejected, completed, purchased, dispatched, escalated, or otherwise processed unless the source data explicitly confirms that this has already happened.\r\n\r\nIf the routing decision is MANAGEMENT, acknowledge that the request requires management approval.\r\n\r\nIf the routing decision is AUTOMATIC,acknowledge that the request can proceed to the recommended department for processing.\r\nIf the routing decision is HIGH-RISK, acknowledge that the request requires human review.\r\nIMPORTANT RULES:\r\nAnalyze the actual webhook request.\r\nUse only the supplied source information.\r\nDo not invent facts, policies, limits, approvals, departments, actions, or outcomes.\r\nDo not alter or substitute the employee's name, employee email, request type, request description, estimated cost, currency, urgency, manager approval, or other source information.\r\nUse exactly the allowed values specified above.\r\nPriority and risk level are separate classifications.\r\nA high priority does not automatically mean high risk.\r\nA high estimated cost does not automatically mean INVALID or HIGH-RISK.\r\nManagement approval takes precedence over the other routing conditions.\r\nIf approval is not required and risk is HIGH, use HIGH-RISK.\r\nIf approval is not required and risk is LOW or MEDIUM, use AUTOMATIC.\r\nIf a safe routing decision cannot be determined because the information is insufficient, contradictory, or unusable, use HIGH-RISK.\r\nNever return a routing value outside MANAGEMENT, AUTOMATIC, or HIGH-RISK.\r\nReturn exactly the following ten fields:\r\ncategory priority risk_level requires_approval recommended_department recommended_action routing_decision summary reason automation_response\r\nReturn valid JSON only.\r\nDo not return Markdown.\r\nDo not use JSON code fences.\r\nDo not include explanations outside the JSON."
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": -13
+        },
+        "restore": {
+          "expect": {
+            "model": {
+              "label": "GPT-5 nanoThe most cost-effective option for casual conversation and straightforward, simple fact-retrieval"
+            }
+          }
+        },
+        "expect": [
+          {
+            "name": "model",
+            "type": "select",
+            "label": "Model",
+            "required": true,
+            "validate": {
+              "enum": [
+                "gpt-5-nano",
+                "gpt-6-astra",
+                "gpt-5.6-sol",
+                "gpt-5.6-terra",
+                "gpt-5.6-luna",
+                "gpt-5.5",
+                "gpt-5.4-nano",
+                "gpt-5.4-mini",
+                "gpt-5.4",
+                "gpt-5.2",
+                "gpt-5.1",
+                "gpt-5",
+                "gpt-5-mini"
+              ]
+            }
+          },
+          {
+            "name": "textPrompt",
+            "type": "text",
+            "label": "Text prompt",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "module": "json:ParseJSON",
+      "version": 1,
+      "parameters": {
+        "type": 589294
+      },
+      "mapper": {
+        "json": "{{2.result}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": -13
+        },
+        "setupValidation": {
+          "result": {
+            "valid": true,
+            "fields": []
+          },
+          "version": 1,
+          "configuration": "a04be187a8c99584"
+        },
+        "restore": {
+          "parameters": {
+            "type": {
+              "label": "AI Operations Request & Approval automation webhook"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "type": "udt",
+            "label": "Data structure"
+          }
+        ],
+        "expect": [
+          {
+            "name": "json",
+            "type": "text",
+            "label": "JSON string",
+            "required": true
+          }
+        ],
+        "interface": [
+          {
+            "help": "",
+            "name": "category",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          },
+          {
+            "help": "",
+            "name": "priority",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          },
+          {
+            "help": "",
+            "name": "risk_level",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          },
+          {
+            "help": "",
+            "name": "requires_approval",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          },
+          {
+            "help": "",
+            "name": "recommended_department",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          },
+          {
+            "help": "",
+            "name": "routing_decision",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          },
+          {
+            "help": "",
+            "name": "summary",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          },
+          {
+            "help": "",
+            "name": "reason",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          },
+          {
+            "help": "",
+            "name": "automation_response",
+            "type": "text",
+            "label": null,
+            "default": null,
+            "required": false,
+            "multiline": false
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "module": "util:SetVariables",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "scope": "roundtrip",
+        "variables": [
+          {
+            "name": "Timestamp",
+            "value": "{{now}}"
+          },
+          {
+            "name": "Request ID",
+            "value": "TKT+ - {{timestamp}}"
+          }
+        ]
+      },
+      "metadata": {
+        "designer": {
+          "x": 900,
+          "y": -13
+        },
+        "restore": {
+          "expect": {
+            "scope": {
+              "label": "One cycle"
+            },
+            "variables": {
+              "items": [
+                null,
+                null
+              ]
+            }
+          }
+        },
+        "expect": [
+          {
+            "name": "variables",
+            "spec": {
+              "name": "value",
+              "spec": [
+                {
+                  "name": "name",
+                  "type": "text",
+                  "label": "Variable name",
+                  "required": true
+                },
+                {
+                  "name": "value",
+                  "type": "any",
+                  "label": "Variable value"
+                }
+              ],
+              "type": "collection",
+              "label": "Variable"
+            },
+            "type": "array",
+            "label": "Variables",
+            "validate": {
+              "unique": {
+                "by": "name"
+              },
+              "minItems": 1
+            }
+          },
+          {
+            "name": "scope",
+            "type": "select",
+            "label": "Variable lifetime",
+            "required": true,
+            "validate": {
+              "enum": [
+                "roundtrip",
+                "execution"
+              ]
+            }
+          }
+        ],
+        "interface": [
+          {
+            "name": "Timestamp",
+            "type": "any",
+            "label": "Timestamp"
+          },
+          {
+            "name": "Request ID",
+            "type": "any",
+            "label": "Request ID"
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "module": "google-sheets:addRow",
+      "version": 2,
+      "parameters": {
+        "__IMTCONN__": 10079479
+      },
+      "mapper": {
+        "from": "drive",
+        "mode": "select",
+        "values": {
+          "0": "{{4.`Request ID`}}",
+          "1": "{{4.Timestamp}}",
+          "2": "{{1.employee_name}}",
+          "3": "{{1.employee_email}}",
+          "4": "{{1.department}}",
+          "5": "{{1.request_type}}",
+          "6": "{{1.request_description}}",
+          "7": "{{1.estimated_cost}}",
+          "8": "{{1.currency}}",
+          "9": "{{1.urgency}}",
+          "10": "{{1.manager_approval}}",
+          "11": "{{3.category}}",
+          "12": "{{3.priority}}",
+          "13": "{{3.risk_level}}",
+          "14": "{{3.routing_decision}}",
+          "15": "{{3.requires_approval}}",
+          "16": "{{3.summary}}",
+          "17": "{{3.reason}}",
+          "18": "{{3.automation_response}}"
+        },
+        "sheetId": "Sheet1",
+        "spreadsheetId": "<REDACTED>",
+        "includesHeaders": true,
+        "insertDataOption": "INSERT_ROWS",
+        "useColumnHeaders": false,
+        "valueInputOption": "USER_ENTERED",
+        "insertUnformatted": false
+      },
+      "metadata": {
+        "designer": {
+          "x": 1200,
+          "y": -13
+        },
+        "restore": {
+          "expect": {
+            "from": {
+              "label": "My Drive"
+            },
+            "mode": {
+              "label": "Search by path"
+            },
+            "sheetId": {
+              "label": "Sheet1"
+            },
+            "spreadsheetId": {
+              "path": [
+                "AI Operations Request & Approval Automation"
+              ]
+            },
+            "includesHeaders": {
+              "label": "Yes"
+            },
+            "insertDataOption": {
+              "mode": "chose",
+              "label": "Insert rows"
+            },
+            "useColumnHeaders": {
+              "label": "No"
+            },
+            "valueInputOption": {
+              "mode": "chose",
+              "label": "User entered"
+            },
+            "insertUnformatted": {
+              "mode": "chose"
+            }
+          },
+          "parameters": {
+            "__IMTCONN__": {
+              "data": {
+                "scoped": "true",
+                "connection": "google"
+              },
+              "label": "Brian's Google connection (reviewer@example.com)"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "__IMTCONN__",
+            "type": "account:google",
+            "label": "Connection",
+            "required": true
+          }
+        ],
+        "expect": [
+          {
+            "name": "mode",
+            "type": "select",
+            "label": "Search Method",
+            "required": true,
+            "validate": {
+              "enum": [
+                "select",
+                "fromAll",
+                "map"
+              ]
+            }
+          },
+          {
+            "name": "insertUnformatted",
+            "type": "boolean",
+            "label": "Unformatted",
+            "required": true
+          },
+          {
+            "name": "valueInputOption",
+            "type": "select",
+            "label": "Value input option",
+            "required": true,
+            "validate": {
+              "enum": [
+                "USER_ENTERED",
+                "RAW"
+              ]
+            }
+          },
+          {
+            "name": "insertDataOption",
+            "type": "select",
+            "label": "Insert data option",
+            "validate": {
+              "enum": [
+                "INSERT_ROWS",
+                "OVERWRITE"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "type": "select",
+            "label": "Drive",
+            "required": true,
+            "validate": {
+              "enum": [
+                "drive",
+                "share",
+                "team"
+              ]
+            }
+          },
+          {
+            "name": "spreadsheetId",
+            "type": "file",
+            "label": "Spreadsheet Name",
+            "required": true
+          },
+          {
+            "name": "sheetId",
+            "type": "select",
+            "label": "Sheet Name",
+            "required": true
+          },
+          {
+            "name": "includesHeaders",
+            "type": "select",
+            "label": "Table contains headers",
+            "required": true,
+            "validate": {
+              "enum": [
+                true,
+                false
+              ]
+            }
+          },
+          {
+            "name": "useColumnHeaders",
+            "type": "select",
+            "label": "Use column headers as IDs of the columns",
+            "required": true,
+            "validate": {
+              "enum": [
+                true,
+                false
+              ]
+            }
+          },
+          {
+            "name": "values",
+            "spec": [
+              {
+                "name": "0",
+                "type": "text",
+                "label": "Request ID (A)"
+              },
+              {
+                "name": "1",
+                "type": "text",
+                "label": "Timestamp (B)"
+              },
+              {
+                "name": "2",
+                "type": "text",
+                "label": "Employee Name (C)"
+              },
+              {
+                "name": "3",
+                "type": "text",
+                "label": "Employee Email (D)"
+              },
+              {
+                "name": "4",
+                "type": "text",
+                "label": "Recommended Department (E)"
+              },
+              {
+                "name": "5",
+                "type": "text",
+                "label": "Request Type (F)"
+              },
+              {
+                "name": "6",
+                "type": "text",
+                "label": "Request Description (G)"
+              },
+              {
+                "name": "7",
+                "type": "text",
+                "label": "Estimated Cost (H)"
+              },
+              {
+                "name": "8",
+                "type": "text",
+                "label": "Currency (I)"
+              },
+              {
+                "name": "9",
+                "type": "text",
+                "label": "Urgency (J)"
+              },
+              {
+                "name": "10",
+                "type": "text",
+                "label": "Manager Approval (K)"
+              },
+              {
+                "name": "11",
+                "type": "text",
+                "label": "AI Category (L)"
+              },
+              {
+                "name": "12",
+                "type": "text",
+                "label": "Priority (M)"
+              },
+              {
+                "name": "13",
+                "type": "text",
+                "label": "Risk (N)"
+              },
+              {
+                "name": "14",
+                "type": "text",
+                "label": "Routing Decision (O)"
+              },
+              {
+                "name": "15",
+                "type": "text",
+                "label": "Requires Approval (P)"
+              },
+              {
+                "name": "16",
+                "type": "text",
+                "label": "AI Summary (Q)"
+              },
+              {
+                "name": "17",
+                "type": "text",
+                "label": "Reason (R)"
+              },
+              {
+                "name": "18",
+                "type": "text",
+                "label": "Automated Response (S)"
+              },
+              {
+                "name": "19",
+                "type": "text",
+                "label": "(T)"
+              },
+              {
+                "name": "20",
+                "type": "text",
+                "label": "(U)"
+              },
+              {
+                "name": "21",
+                "type": "text",
+                "label": "(V)"
+              },
+              {
+                "name": "22",
+                "type": "text",
+                "label": "(W)"
+              },
+              {
+                "name": "23",
+                "type": "text",
+                "label": "(X)"
+              },
+              {
+                "name": "24",
+                "type": "text",
+                "label": "(Y)"
+              },
+              {
+                "name": "25",
+                "type": "text",
+                "label": "(Z)"
+              },
+              {
+                "name": "26",
+                "type": "text",
+                "label": "(AA)"
+              },
+              {
+                "name": "27",
+                "type": "text",
+                "label": "(AB)"
+              }
+            ],
+            "type": "collection",
+            "label": "Values in columns",
+            "metadata": [
+              [
+                [
+                  "Request ID",
+                  "Timestamp",
+                  "Employee Name",
+                  "Employee Email",
+                  "Recommended Department",
+                  "Request Type",
+                  "Request Description",
+                  "Estimated Cost",
+                  "Currency",
+                  "Urgency",
+                  "Manager Approval",
+                  "AI Category",
+                  "Priority",
+                  "Risk",
+                  "Routing Decision",
+                  "Requires Approval",
+                  "AI Summary",
+                  "Reason",
+                  "Automated Response"
+                ]
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "parameters": {
+        "else": 3
+      },
+      "mapper": null,
+      "metadata": {
+        "designer": {
+          "x": 1500,
+          "y": -13
+        }
+      },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 7,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 10110496
+              },
+              "filter": {
+                "name": "Managerial Route",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{3.requires_approval}}",
+                      "b": "YES",
+                      "o": "text:equal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "to": [
+                  "reviewer@example.com"
+                ],
+                "content": "<h2> Operations Request & Approval</h2> \n\n<h3> Request Details </h3> \n\n<p>\n\n<strong>Employee_Name </strong> {{1.employee_name}} <br>\n<strong> Employee_Email </strong> {{1.employee_email}} <br>\n<strong> Department </strong>  {{1.department}}<br>\n<strong>  Request_Type </strong>  {{1.request_type}}<br>\n<strong>  Request_Description </strong>  {{1.request_description}}<br>\n<strong> Estimated_Cost </strong>  {{1.estimated_cost}}<br>\n<strong> Currency </strong>  {{1.currency}}<br>\n<strong> Urgency  </strong>  {{1.urgency}}<br>\n<strong> Manager_Approval </strong>  {{1.manager_approval}}<br>\n\n</p>\n\n<h3> AI Decision </h3>\n\n<p>\n\n<strong> Category </strong>  {{3.category}}<br>\n<strong> Priority </strong>  {{3.priority}}<br>\n<strong> Risk_Level </strong>  {{3.risk_level}}<br>\n<strong> Requires_Approval </strong>  {{3.requires_approval}}<br>\n<strong> Recommended_Department </strong>  {{3.recommended_department}}<br>\n<strong> Routing_Decision </strong>  {{3.routing_decision}}<br>\n<strong> Summary </strong>  {{3.summary}}<br>\n<strong> Reason </strong>  {{3.reason}}<br>\n\n</p>\n\nFor your Immediate review and Action",
+                "subject": "Requires Management Review - {{3.category}} - {{3.priority}}",
+                "bodyType": "rawHtml"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2126,
+                  "y": -677
+                },
+                "setupValidation": {
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  },
+                  "version": 1,
+                  "configuration": "f414db0cdb3493c6"
+                },
+                "restore": {
+                  "expect": {
+                    "cc": {
+                      "mode": "chose"
+                    },
+                    "to": {
+                      "mode": "chose",
+                      "items": [
+                        null
+                      ]
+                    },
+                    "bcc": {
+                      "mode": "chose"
+                    },
+                    "from": {
+                      "mode": "chose",
+                      "label": "Empty"
+                    },
+                    "bodyType": {
+                      "label": "Raw HTML"
+                    },
+                    "attachments": {
+                      "mode": "chose"
+                    },
+                    "emailHeaders": {
+                      "mode": "chose"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google-email"
+                      },
+                      "label": "Brian's Gmail connection (reviewer@example.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-email",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "to",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address",
+                      "required": true,
+                      "validate": true
+                    },
+                    "type": "array",
+                    "label": "To",
+                    "required": true
+                  },
+                  {
+                    "name": "subject",
+                    "type": "text",
+                    "label": "Subject"
+                  },
+                  {
+                    "name": "bodyType",
+                    "type": "select",
+                    "label": "Body type",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "rawHtml",
+                        "collection"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "attachments",
+                    "spec": {
+                      "name": "value",
+                      "spec": [
+                        {
+                          "name": "filename",
+                          "type": "filename",
+                          "label": "File name",
+                          "required": true,
+                          "semantic": "file:name"
+                        },
+                        {
+                          "name": "data",
+                          "type": "buffer",
+                          "label": "Data",
+                          "required": true,
+                          "semantic": "file:data"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Attachment"
+                    },
+                    "type": "array",
+                    "label": "Attachments"
+                  },
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "From"
+                  },
+                  {
+                    "name": "cc",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address"
+                    },
+                    "type": "array",
+                    "label": "CC recipients"
+                  },
+                  {
+                    "name": "bcc",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address"
+                    },
+                    "type": "array",
+                    "label": "BCC recipients"
+                  },
+                  {
+                    "name": "emailHeaders",
+                    "spec": {
+                      "name": "value",
+                      "spec": [
+                        {
+                          "name": "key",
+                          "type": "text",
+                          "label": "Key",
+                          "required": true
+                        },
+                        {
+                          "name": "value",
+                          "type": "text",
+                          "label": "Value"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Email header"
+                    },
+                    "type": "array",
+                    "label": "Additional email headers"
+                  },
+                  {
+                    "name": "content",
+                    "type": "text",
+                    "label": "Content"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 8,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 10110496
+              },
+              "filter": {
+                "name": "Automation Route",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{3.routing_decision}}",
+                      "b": "AUTOMATIC",
+                      "o": "text:equal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "to": [
+                  "{{1.employee_email}}"
+                ],
+                "content": "{{3.automation_response}}",
+                "subject": "Request Automatically Processed - {{3.category}}",
+                "bodyType": "rawHtml"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2228,
+                  "y": -285
+                },
+                "setupValidation": {
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  },
+                  "version": 1,
+                  "configuration": "be0fa711f1781728"
+                },
+                "restore": {
+                  "expect": {
+                    "cc": {
+                      "mode": "chose"
+                    },
+                    "to": {
+                      "mode": "chose",
+                      "items": [
+                        null
+                      ]
+                    },
+                    "bcc": {
+                      "mode": "chose"
+                    },
+                    "from": {
+                      "mode": "chose",
+                      "label": "Empty"
+                    },
+                    "bodyType": {
+                      "label": "Raw HTML"
+                    },
+                    "attachments": {
+                      "mode": "chose"
+                    },
+                    "emailHeaders": {
+                      "mode": "chose"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google-email"
+                      },
+                      "label": "Brian's Gmail connection (reviewer@example.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-email",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "to",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address",
+                      "required": true,
+                      "validate": true
+                    },
+                    "type": "array",
+                    "label": "To",
+                    "required": true
+                  },
+                  {
+                    "name": "subject",
+                    "type": "text",
+                    "label": "Subject"
+                  },
+                  {
+                    "name": "bodyType",
+                    "type": "select",
+                    "label": "Body type",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "rawHtml",
+                        "collection"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "attachments",
+                    "spec": {
+                      "name": "value",
+                      "spec": [
+                        {
+                          "name": "filename",
+                          "type": "filename",
+                          "label": "File name",
+                          "required": true,
+                          "semantic": "file:name"
+                        },
+                        {
+                          "name": "data",
+                          "type": "buffer",
+                          "label": "Data",
+                          "required": true,
+                          "semantic": "file:data"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Attachment"
+                    },
+                    "type": "array",
+                    "label": "Attachments"
+                  },
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "From"
+                  },
+                  {
+                    "name": "cc",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address"
+                    },
+                    "type": "array",
+                    "label": "CC recipients"
+                  },
+                  {
+                    "name": "bcc",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address"
+                    },
+                    "type": "array",
+                    "label": "BCC recipients"
+                  },
+                  {
+                    "name": "emailHeaders",
+                    "spec": {
+                      "name": "value",
+                      "spec": [
+                        {
+                          "name": "key",
+                          "type": "text",
+                          "label": "Key",
+                          "required": true
+                        },
+                        {
+                          "name": "value",
+                          "type": "text",
+                          "label": "Value"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Email header"
+                    },
+                    "type": "array",
+                    "label": "Additional email headers"
+                  },
+                  {
+                    "name": "content",
+                    "type": "text",
+                    "label": "Content"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 9,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 10110496
+              },
+              "filter": {
+                "name": "HIGH-RISK Route",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{3.routing_decision}}",
+                      "b": "HIGH-RISK",
+                      "o": "text:equal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "to": [
+                  "reviewer@example.com"
+                ],
+                "content": "<h2> Immediate Review Required </h2> \n\n<h3>Risk Details </h3> \n\n<p>\n<strong>  Employee_Name </strong> {{1.employee_name}} <br>\n<strong> Employee_Email </strong>  {{1.employee_email}}<br>\n<strong> Department </strong> {{1.department}} <br>\n<strong>  Request_Type </strong>  {{1.request_type}}<br>\n<strong>  Estimated_Cost </strong>  {{1.estimated_cost}}<br>\n<strong>  Currency </strong> {{1.currency}} <br>\n<strong> Urgency </strong>  {{1.currency}}<br>\n<strong> Manager_Approval </strong> {{1.manager_approval}}<br>\n\n</p> \n\n<h3> AI Evaluation </h3>\n\n<p>\n\n<strong> Category </strong> {{3.category}} <br>\n<strong>  Priority </strong>  {{3.priority}}<br>\n<strong>  Risk_Level </strong>  {{3.risk_level}}<br>\n<strong> Requires_Approval </strong>  {{3.requires_approval}}<br>\n<strong>  Recommended_Department </strong>  {{3.recommended_department}}<br>\n<strong> Routing_Decision </strong>  {{3.routing_decision}}<br>\n<strong>  Summary </strong> {{3.summary}} <br>\n<strong>  Reason </strong> {{3.reason}} <br>\n\n</P>\nThe above request was marked as High Risk and Requires Immediate  Review and Action.",
+                "subject": "HIGH-RISK Request - {{3.category}} - {{4.`Request ID`}}",
+                "bodyType": "rawHtml"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2417,
+                  "y": 167
+                },
+                "setupValidation": {
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  },
+                  "version": 1,
+                  "configuration": "43b1f250aeb15041"
+                },
+                "restore": {
+                  "expect": {
+                    "cc": {
+                      "mode": "chose"
+                    },
+                    "to": {
+                      "mode": "chose",
+                      "items": [
+                        null
+                      ]
+                    },
+                    "bcc": {
+                      "mode": "chose"
+                    },
+                    "from": {
+                      "mode": "chose",
+                      "label": "Empty"
+                    },
+                    "bodyType": {
+                      "label": "Raw HTML"
+                    },
+                    "attachments": {
+                      "mode": "chose"
+                    },
+                    "emailHeaders": {
+                      "mode": "chose"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google-email"
+                      },
+                      "label": "Brian's Gmail connection (reviewer@example.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-email",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "to",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address",
+                      "required": true,
+                      "validate": true
+                    },
+                    "type": "array",
+                    "label": "To",
+                    "required": true
+                  },
+                  {
+                    "name": "subject",
+                    "type": "text",
+                    "label": "Subject"
+                  },
+                  {
+                    "name": "bodyType",
+                    "type": "select",
+                    "label": "Body type",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "rawHtml",
+                        "collection"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "attachments",
+                    "spec": {
+                      "name": "value",
+                      "spec": [
+                        {
+                          "name": "filename",
+                          "type": "filename",
+                          "label": "File name",
+                          "required": true,
+                          "semantic": "file:name"
+                        },
+                        {
+                          "name": "data",
+                          "type": "buffer",
+                          "label": "Data",
+                          "required": true,
+                          "semantic": "file:data"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Attachment"
+                    },
+                    "type": "array",
+                    "label": "Attachments"
+                  },
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "From"
+                  },
+                  {
+                    "name": "cc",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address"
+                    },
+                    "type": "array",
+                    "label": "CC recipients"
+                  },
+                  {
+                    "name": "bcc",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address"
+                    },
+                    "type": "array",
+                    "label": "BCC recipients"
+                  },
+                  {
+                    "name": "emailHeaders",
+                    "spec": {
+                      "name": "value",
+                      "spec": [
+                        {
+                          "name": "key",
+                          "type": "text",
+                          "label": "Key",
+                          "required": true
+                        },
+                        {
+                          "name": "value",
+                          "type": "text",
+                          "label": "Value"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Email header"
+                    },
+                    "type": "array",
+                    "label": "Additional email headers"
+                  },
+                  {
+                    "name": "content",
+                    "type": "text",
+                    "label": "Content"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 12,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 10110496
+              },
+              "filter": {
+                "name": "Fallback Route",
+                "conditions": []
+              },
+              "mapper": {
+                "to": [
+                  "reviewer@example.com"
+                ],
+                "content": "<h2> Operations Review & Human Approval Required </h2>\n \n\n<h3>Request Details </h3> \n\n<p>\n\n<strong> Employee_Name </strong>  {{1.employee_name}}<br>\n<strong> Employee_Email </strong>  {{1.employee_email}}<br>\n<strong> Department </strong>  {{1.department}}<br>\n<strong> Request_Type </strong>  {{1.request_type}}<br>\n<strong> Request_Description </strong>  {{1.request_description}}<br>\n<strong> Estimated_Cost </strong>  {{1.estimated_cost}}<br>\n<strong> Currency </strong>  {{1.currency}}<br>\n<strong> Urgency </strong>  {{1.urgency}}<br>\n<strong> Manager_Approval </strong>  {{1.manager_approval}}<br>\n\n</p> \n\n<h3> AI Review </h3> \n\n<p>\n\n<strong> Category </strong>  {{3.category}}<br>\n<strong> Priority </strong> {{3.priority}} <br>\n<strong> Risk_Level </strong>  {{3.risk_level}}<br>\n<strong> Requires_Approval </strong>  {{3.requires_approval}}<br>\n<strong>  Recommended_Department </strong>  {{3.recommended_department}}<br>\n<strong> Routing_Decision </strong>  {{3.routing_decision}}<br>\n<strong> Summary </strong>  {{3.summary}}<br>\n<strong> Reason </strong>  {{3.reason}}<br>\n\n</p>\nFor your Review and Relevant Action.",
+                "subject": "Human Review Needed - {{3.category}} - {{3.priority}}",
+                "bodyType": "rawHtml"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1963,
+                  "y": 671
+                },
+                "setupValidation": {
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  },
+                  "version": 1,
+                  "configuration": "2e5c25c7d8a1bf54"
+                },
+                "restore": {
+                  "expect": {
+                    "cc": {
+                      "mode": "chose"
+                    },
+                    "to": {
+                      "mode": "chose",
+                      "items": [
+                        null
+                      ]
+                    },
+                    "bcc": {
+                      "mode": "chose"
+                    },
+                    "from": {
+                      "mode": "chose",
+                      "label": "Empty"
+                    },
+                    "bodyType": {
+                      "label": "Raw HTML"
+                    },
+                    "attachments": {
+                      "mode": "chose"
+                    },
+                    "emailHeaders": {
+                      "mode": "chose"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google-email"
+                      },
+                      "label": "Brian's Gmail connection (reviewer@example.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-email",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "to",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address",
+                      "required": true,
+                      "validate": true
+                    },
+                    "type": "array",
+                    "label": "To",
+                    "required": true
+                  },
+                  {
+                    "name": "subject",
+                    "type": "text",
+                    "label": "Subject"
+                  },
+                  {
+                    "name": "bodyType",
+                    "type": "select",
+                    "label": "Body type",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "rawHtml",
+                        "collection"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "attachments",
+                    "spec": {
+                      "name": "value",
+                      "spec": [
+                        {
+                          "name": "filename",
+                          "type": "filename",
+                          "label": "File name",
+                          "required": true,
+                          "semantic": "file:name"
+                        },
+                        {
+                          "name": "data",
+                          "type": "buffer",
+                          "label": "Data",
+                          "required": true,
+                          "semantic": "file:data"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Attachment"
+                    },
+                    "type": "array",
+                    "label": "Attachments"
+                  },
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "From"
+                  },
+                  {
+                    "name": "cc",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address"
+                    },
+                    "type": "array",
+                    "label": "CC recipients"
+                  },
+                  {
+                    "name": "bcc",
+                    "spec": {
+                      "name": "value",
+                      "type": "email",
+                      "label": "Recipient email address"
+                    },
+                    "type": "array",
+                    "label": "BCC recipients"
+                  },
+                  {
+                    "name": "emailHeaders",
+                    "spec": {
+                      "name": "value",
+                      "spec": [
+                        {
+                          "name": "key",
+                          "type": "text",
+                          "label": "Key",
+                          "required": true
+                        },
+                        {
+                          "name": "value",
+                          "type": "text",
+                          "label": "Value"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Email header"
+                    },
+                    "type": "array",
+                    "label": "Additional email headers"
+                  },
+                  {
+                    "name": "content",
+                    "type": "text",
+                    "label": "Content"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "slots": null,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "eu1.make.com",
+    "notes": []
+  }
+}

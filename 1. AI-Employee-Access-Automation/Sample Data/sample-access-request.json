@@ -1,0 +1,7 @@
+{
+  "employee_name": "Alex Morgan",
+  "employee_email": "alex.morgan@example.com",
+  "department": "IT",
+  "request_description": "Request access to the standard project management application.",
+  "reason": "Required for normal project work."
+}

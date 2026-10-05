@@ -1,0 +1,7 @@
+{
+  "request_id": "AR-1001",
+  "employee_name": "Alex Morgan",
+  "employee_email": "alex.morgan@example.com",
+  "access_requested": "Standard reporting application",
+  "reason": "Required for assigned responsibilities."
+}

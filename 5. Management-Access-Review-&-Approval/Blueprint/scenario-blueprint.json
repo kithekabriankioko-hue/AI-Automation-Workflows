@@ -1,0 +1,3475 @@
+{
+  "name": "Management Access Review & Approval",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": 3816951,
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": -456,
+          "y": 0
+        },
+        "setupValidation": {
+          "result": {
+            "valid": true,
+            "fields": []
+          },
+          "version": 1,
+          "configuration": "235e89f89ce9773b"
+        },
+        "restore": {
+          "parameters": {
+            "hook": {
+              "data": {
+                "editable": "true"
+              },
+              "label": "Management Access review and decision -  webhook"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hook",
+            "type": "hook:gateway-webhook",
+            "label": "Webhook",
+            "required": true
+          },
+          {
+            "name": "maxResults",
+            "type": "number",
+            "label": "Maximum number of results"
+          }
+        ],
+        "interface": [
+          {
+            "name": "request_id",
+            "type": "text"
+          },
+          {
+            "name": "decision",
+            "type": "text"
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "mapper": null,
+      "metadata": {
+        "designer": {
+          "x": 154,
+          "y": 0,
+          "name": "Manager decision Validation"
+        }
+      },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 5,
+              "module": "google-sheets:filterRows",
+              "version": 2,
+              "parameters": {
+                "__IMTCONN__": 10079479
+              },
+              "filter": {
+                "name": "REJECTED ROUTE",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{1.decision}}",
+                      "b": "REJECTED",
+                      "o": "text:equal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "from": "drive",
+                "limit": "1",
+                "filter": [
+                  [
+                    {
+                      "a": "A",
+                      "b": "{{1.request_id}}",
+                      "o": "text:equal"
+                    }
+                  ]
+                ],
+                "sheetId": "Sheet1",
+                "sortOrder": "asc",
+                "spreadsheetId": "<REDACTED>",
+                "tableFirstRow": "A1:CZ1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 607,
+                  "y": 332
+                },
+                "setupValidation": {
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  },
+                  "version": 1,
+                  "configuration": "22ac418c0c046fd2"
+                },
+                "restore": {
+                  "expect": {
+                    "from": {
+                      "label": "Select from My Drive"
+                    },
+                    "orderBy": {
+                      "mode": "chose",
+                      "label": "Empty"
+                    },
+                    "sheetId": {
+                      "mode": "chose",
+                      "label": "Sheet1"
+                    },
+                    "sortOrder": {
+                      "mode": "chose",
+                      "label": "Ascending"
+                    },
+                    "spreadsheetId": {
+                      "mode": "chose",
+                      "label": "AI Employee Acces Request Automation"
+                    },
+                    "tableFirstRow": {
+                      "label": "A-CZ"
+                    },
+                    "includesHeaders": {
+                      "mode": "chose",
+                      "label": "Yes"
+                    },
+                    "valueRenderOption": {
+                      "mode": "chose",
+                      "label": "Formatted value"
+                    },
+                    "dateTimeRenderOption": {
+                      "mode": "chose",
+                      "label": "Formatted string"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google"
+                      },
+                      "label": "Brian's Google connection (reviewer@example.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "Search Method",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "valueRenderOption",
+                    "type": "select",
+                    "label": "Value render option",
+                    "validate": {
+                      "enum": [
+                        "FORMATTED_VALUE",
+                        "UNFORMATTED_VALUE",
+                        "FORMULA"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "dateTimeRenderOption",
+                    "type": "select",
+                    "label": "Date and time render option",
+                    "validate": {
+                      "enum": [
+                        "SERIAL_NUMBER",
+                        "FORMATTED_STRING"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "limit",
+                    "type": "uinteger",
+                    "label": "Limit"
+                  },
+                  {
+                    "name": "spreadsheetId",
+                    "type": "select",
+                    "label": "Spreadsheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "sheetId",
+                    "type": "select",
+                    "label": "Sheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "includesHeaders",
+                    "type": "select",
+                    "label": "Table contains headers",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "tableFirstRow",
+                    "type": "select",
+                    "label": "Column range",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "A1:Z1",
+                        "A1:BZ1",
+                        "A1:CZ1",
+                        "A1:DZ1",
+                        "A1:MZ1",
+                        "A1:ZZ1",
+                        "A1:AZZ1",
+                        "A1:BZZ1",
+                        "A1:CZZ1",
+                        "A1:DZZ1",
+                        "A1:MZZ1",
+                        "A1:ZZZ1"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "filter",
+                    "type": "filter",
+                    "label": "Filter",
+                    "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                  },
+                  {
+                    "name": "orderBy",
+                    "type": "select",
+                    "label": "Order by"
+                  },
+                  {
+                    "name": "sortOrder",
+                    "type": "select",
+                    "label": "Sort order",
+                    "validate": {
+                      "enum": [
+                        "asc",
+                        "desc"
+                      ]
+                    }
+                  }
+                ],
+                "interface": [
+                  {
+                    "name": "__IMTLENGTH__",
+                    "type": "uinteger",
+                    "label": "Total number of bundles"
+                  },
+                  {
+                    "name": "__IMTINDEX__",
+                    "type": "uinteger",
+                    "label": "Bundle order position"
+                  },
+                  {
+                    "name": "__ROW_NUMBER__",
+                    "type": "number",
+                    "label": "Row number"
+                  },
+                  {
+                    "name": "__SPREADSHEET_ID__",
+                    "type": "text",
+                    "label": "Spreadsheet ID"
+                  },
+                  {
+                    "name": "__SHEET__",
+                    "type": "text",
+                    "label": "Sheet"
+                  },
+                  {
+                    "name": "0",
+                    "type": "text",
+                    "label": "Request_ID (A)"
+                  },
+                  {
+                    "name": "1",
+                    "type": "text",
+                    "label": "Employee_Name (B)"
+                  },
+                  {
+                    "name": "2",
+                    "type": "text",
+                    "label": "Employee_Email (C)"
+                  },
+                  {
+                    "name": "3",
+                    "type": "text",
+                    "label": "Request_Description (D)"
+                  },
+                  {
+                    "name": "4",
+                    "type": "text",
+                    "label": "Reason (E)"
+                  },
+                  {
+                    "name": "5",
+                    "type": "text",
+                    "label": "Timestamp (F)"
+                  },
+                  {
+                    "name": "6",
+                    "type": "text",
+                    "label": "Priority (G)"
+                  },
+                  {
+                    "name": "7",
+                    "type": "text",
+                    "label": "Category (H)"
+                  },
+                  {
+                    "name": "8",
+                    "type": "text",
+                    "label": "Action (I)"
+                  },
+                  {
+                    "name": "9",
+                    "type": "text",
+                    "label": "Summary (J)"
+                  },
+                  {
+                    "name": "10",
+                    "type": "text",
+                    "label": "Final Decision (K)"
+                  },
+                  {
+                    "name": "11",
+                    "type": "text",
+                    "label": "Review Status (L)"
+                  },
+                  {
+                    "name": "12",
+                    "type": "text",
+                    "label": "Reviewer Decision (M)"
+                  },
+                  {
+                    "name": "13",
+                    "type": "text",
+                    "label": "HTTP Status (N)"
+                  },
+                  {
+                    "name": "14",
+                    "type": "text",
+                    "label": "Ticket ID (O)"
+                  },
+                  {
+                    "name": "15",
+                    "type": "text",
+                    "label": "Execution  Status (P)"
+                  },
+                  {
+                    "name": "16",
+                    "type": "text",
+                    "label": "(Q)"
+                  },
+                  {
+                    "name": "17",
+                    "type": "text",
+                    "label": "(R)"
+                  },
+                  {
+                    "name": "18",
+                    "type": "text",
+                    "label": "(S)"
+                  },
+                  {
+                    "name": "19",
+                    "type": "text",
+                    "label": "(T)"
+                  },
+                  {
+                    "name": "20",
+                    "type": "text",
+                    "label": "(U)"
+                  },
+                  {
+                    "name": "21",
+                    "type": "text",
+                    "label": "(V)"
+                  },
+                  {
+                    "name": "22",
+                    "type": "text",
+                    "label": "(W)"
+                  },
+                  {
+                    "name": "23",
+                    "type": "text",
+                    "label": "(X)"
+                  },
+                  {
+                    "name": "24",
+                    "type": "text",
+                    "label": "(Y)"
+                  },
+                  {
+                    "name": "25",
+                    "type": "text",
+                    "label": "(Z)"
+                  },
+                  {
+                    "name": "26",
+                    "type": "text",
+                    "label": "(AA)"
+                  },
+                  {
+                    "name": "27",
+                    "type": "text",
+                    "label": "(AB)"
+                  },
+                  {
+                    "name": "28",
+                    "type": "text",
+                    "label": "(AC)"
+                  },
+                  {
+                    "name": "29",
+                    "type": "text",
+                    "label": "(AD)"
+                  },
+                  {
+                    "name": "30",
+                    "type": "text",
+                    "label": "(AE)"
+                  },
+                  {
+                    "name": "31",
+                    "type": "text",
+                    "label": "(AF)"
+                  },
+                  {
+                    "name": "32",
+                    "type": "text",
+                    "label": "(AG)"
+                  },
+                  {
+                    "name": "33",
+                    "type": "text",
+                    "label": "(AH)"
+                  },
+                  {
+                    "name": "34",
+                    "type": "text",
+                    "label": "(AI)"
+                  },
+                  {
+                    "name": "35",
+                    "type": "text",
+                    "label": "(AJ)"
+                  },
+                  {
+                    "name": "36",
+                    "type": "text",
+                    "label": "(AK)"
+                  },
+                  {
+                    "name": "37",
+                    "type": "text",
+                    "label": "(AL)"
+                  },
+                  {
+                    "name": "38",
+                    "type": "text",
+                    "label": "(AM)"
+                  },
+                  {
+                    "name": "39",
+                    "type": "text",
+                    "label": "(AN)"
+                  },
+                  {
+                    "name": "40",
+                    "type": "text",
+                    "label": "(AO)"
+                  },
+                  {
+                    "name": "41",
+                    "type": "text",
+                    "label": "(AP)"
+                  },
+                  {
+                    "name": "42",
+                    "type": "text",
+                    "label": "(AQ)"
+                  },
+                  {
+                    "name": "43",
+                    "type": "text",
+                    "label": "(AR)"
+                  },
+                  {
+                    "name": "44",
+                    "type": "text",
+                    "label": "(AS)"
+                  },
+                  {
+                    "name": "45",
+                    "type": "text",
+                    "label": "(AT)"
+                  },
+                  {
+                    "name": "46",
+                    "type": "text",
+                    "label": "(AU)"
+                  },
+                  {
+                    "name": "47",
+                    "type": "text",
+                    "label": "(AV)"
+                  },
+                  {
+                    "name": "48",
+                    "type": "text",
+                    "label": "(AW)"
+                  },
+                  {
+                    "name": "49",
+                    "type": "text",
+                    "label": "(AX)"
+                  },
+                  {
+                    "name": "50",
+                    "type": "text",
+                    "label": "(AY)"
+                  },
+                  {
+                    "name": "51",
+                    "type": "text",
+                    "label": "(AZ)"
+                  },
+                  {
+                    "name": "52",
+                    "type": "text",
+                    "label": "(BA)"
+                  },
+                  {
+                    "name": "53",
+                    "type": "text",
+                    "label": "(BB)"
+                  },
+                  {
+                    "name": "54",
+                    "type": "text",
+                    "label": "(BC)"
+                  },
+                  {
+                    "name": "55",
+                    "type": "text",
+                    "label": "(BD)"
+                  },
+                  {
+                    "name": "56",
+                    "type": "text",
+                    "label": "(BE)"
+                  },
+                  {
+                    "name": "57",
+                    "type": "text",
+                    "label": "(BF)"
+                  },
+                  {
+                    "name": "58",
+                    "type": "text",
+                    "label": "(BG)"
+                  },
+                  {
+                    "name": "59",
+                    "type": "text",
+                    "label": "(BH)"
+                  },
+                  {
+                    "name": "60",
+                    "type": "text",
+                    "label": "(BI)"
+                  },
+                  {
+                    "name": "61",
+                    "type": "text",
+                    "label": "(BJ)"
+                  },
+                  {
+                    "name": "62",
+                    "type": "text",
+                    "label": "(BK)"
+                  },
+                  {
+                    "name": "63",
+                    "type": "text",
+                    "label": "(BL)"
+                  },
+                  {
+                    "name": "64",
+                    "type": "text",
+                    "label": "(BM)"
+                  },
+                  {
+                    "name": "65",
+                    "type": "text",
+                    "label": "(BN)"
+                  },
+                  {
+                    "name": "66",
+                    "type": "text",
+                    "label": "(BO)"
+                  },
+                  {
+                    "name": "67",
+                    "type": "text",
+                    "label": "(BP)"
+                  },
+                  {
+                    "name": "68",
+                    "type": "text",
+                    "label": "(BQ)"
+                  },
+                  {
+                    "name": "69",
+                    "type": "text",
+                    "label": "(BR)"
+                  },
+                  {
+                    "name": "70",
+                    "type": "text",
+                    "label": "(BS)"
+                  },
+                  {
+                    "name": "71",
+                    "type": "text",
+                    "label": "(BT)"
+                  },
+                  {
+                    "name": "72",
+                    "type": "text",
+                    "label": "(BU)"
+                  },
+                  {
+                    "name": "73",
+                    "type": "text",
+                    "label": "(BV)"
+                  },
+                  {
+                    "name": "74",
+                    "type": "text",
+                    "label": "(BW)"
+                  },
+                  {
+                    "name": "75",
+                    "type": "text",
+                    "label": "(BX)"
+                  },
+                  {
+                    "name": "76",
+                    "type": "text",
+                    "label": "(BY)"
+                  },
+                  {
+                    "name": "77",
+                    "type": "text",
+                    "label": "(BZ)"
+                  },
+                  {
+                    "name": "78",
+                    "type": "text",
+                    "label": "(CA)"
+                  },
+                  {
+                    "name": "79",
+                    "type": "text",
+                    "label": "(CB)"
+                  },
+                  {
+                    "name": "80",
+                    "type": "text",
+                    "label": "(CC)"
+                  },
+                  {
+                    "name": "81",
+                    "type": "text",
+                    "label": "(CD)"
+                  },
+                  {
+                    "name": "82",
+                    "type": "text",
+                    "label": "(CE)"
+                  },
+                  {
+                    "name": "83",
+                    "type": "text",
+                    "label": "(CF)"
+                  },
+                  {
+                    "name": "84",
+                    "type": "text",
+                    "label": "(CG)"
+                  },
+                  {
+                    "name": "85",
+                    "type": "text",
+                    "label": "(CH)"
+                  },
+                  {
+                    "name": "86",
+                    "type": "text",
+                    "label": "(CI)"
+                  },
+                  {
+                    "name": "87",
+                    "type": "text",
+                    "label": "(CJ)"
+                  },
+                  {
+                    "name": "88",
+                    "type": "text",
+                    "label": "(CK)"
+                  },
+                  {
+                    "name": "89",
+                    "type": "text",
+                    "label": "(CL)"
+                  },
+                  {
+                    "name": "90",
+                    "type": "text",
+                    "label": "(CM)"
+                  },
+                  {
+                    "name": "91",
+                    "type": "text",
+                    "label": "(CN)"
+                  },
+                  {
+                    "name": "92",
+                    "type": "text",
+                    "label": "(CO)"
+                  },
+                  {
+                    "name": "93",
+                    "type": "text",
+                    "label": "(CP)"
+                  },
+                  {
+                    "name": "94",
+                    "type": "text",
+                    "label": "(CQ)"
+                  },
+                  {
+                    "name": "95",
+                    "type": "text",
+                    "label": "(CR)"
+                  },
+                  {
+                    "name": "96",
+                    "type": "text",
+                    "label": "(CS)"
+                  },
+                  {
+                    "name": "97",
+                    "type": "text",
+                    "label": "(CT)"
+                  },
+                  {
+                    "name": "98",
+                    "type": "text",
+                    "label": "(CU)"
+                  },
+                  {
+                    "name": "99",
+                    "type": "text",
+                    "label": "(CV)"
+                  },
+                  {
+                    "name": "100",
+                    "type": "text",
+                    "label": "(CW)"
+                  },
+                  {
+                    "name": "101",
+                    "type": "text",
+                    "label": "(CX)"
+                  },
+                  {
+                    "name": "102",
+                    "type": "text",
+                    "label": "(CY)"
+                  },
+                  {
+                    "name": "103",
+                    "type": "text",
+                    "label": "(CZ)"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 17,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {
+                "else": 1
+              },
+              "mapper": null,
+              "metadata": {
+                "designer": {
+                  "x": 1026,
+                  "y": 812
+                }
+              },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 18,
+                      "module": "google-sheets:updateRow",
+                      "version": 2,
+                      "parameters": {
+                        "__IMTCONN__": 10079479
+                      },
+                      "filter": {
+                        "name": "FOUND",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{5.`0`}}",
+                              "o": "exist"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "from": "drive",
+                        "mode": "select",
+                        "values": {
+                          "Review Status": "COMPLETED",
+                          "Final Decision": "HUMAN_REVIEW",
+                          "Execution  Status": "NOT_EXECUTED",
+                          "Reviewer Decision": "REJECTED"
+                        },
+                        "sheetId": "Sheet1",
+                        "rowNumber": "{{5.`__ROW_NUMBER__`}}",
+                        "spreadsheetId": "<REDACTED>",
+                        "includesHeaders": true,
+                        "useColumnHeaders": true,
+                        "valueInputOption": "USER_ENTERED"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 1615,
+                          "y": 660
+                        },
+                        "setupValidation": {
+                          "result": {
+                            "valid": true,
+                            "fields": []
+                          },
+                          "version": 1,
+                          "configuration": "2d5dfb534e2e4ef4"
+                        },
+                        "restore": {
+                          "expect": {
+                            "from": {
+                              "label": "My Drive"
+                            },
+                            "mode": {
+                              "label": "Search by path"
+                            },
+                            "sheetId": {
+                              "label": "Sheet1"
+                            },
+                            "spreadsheetId": {
+                              "path": [
+                                "AI Employee Acces Request Automation"
+                              ]
+                            },
+                            "includesHeaders": {
+                              "label": "Yes"
+                            },
+                            "useColumnHeaders": {
+                              "label": "Yes"
+                            },
+                            "valueInputOption": {
+                              "mode": "chose",
+                              "label": "User entered"
+                            }
+                          },
+                          "parameters": {
+                            "__IMTCONN__": {
+                              "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                              },
+                              "label": "Brian's Google connection (reviewer@example.com)"
+                            }
+                          }
+                        },
+                        "parameters": [
+                          {
+                            "name": "__IMTCONN__",
+                            "type": "account:google",
+                            "label": "Connection",
+                            "required": true
+                          }
+                        ],
+                        "expect": [
+                          {
+                            "name": "mode",
+                            "type": "select",
+                            "label": "Search Method",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "valueInputOption",
+                            "type": "select",
+                            "label": "Value input option",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "from",
+                            "type": "select",
+                            "label": "Drive",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "spreadsheetId",
+                            "type": "file",
+                            "label": "Spreadsheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "sheetId",
+                            "type": "select",
+                            "label": "Sheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "rowNumber",
+                            "type": "uinteger",
+                            "label": "Row number",
+                            "required": true
+                          },
+                          {
+                            "name": "includesHeaders",
+                            "type": "select",
+                            "label": "Table contains headers",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "useColumnHeaders",
+                            "type": "select",
+                            "label": "Use column headers as IDs of the columns",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "values",
+                            "spec": [
+                              {
+                                "name": "Request_ID",
+                                "type": "text",
+                                "label": "Request_ID (A)"
+                              },
+                              {
+                                "name": "Employee_Name",
+                                "type": "text",
+                                "label": "Employee_Name (B)"
+                              },
+                              {
+                                "name": "Employee_Email",
+                                "type": "text",
+                                "label": "Employee_Email (C)"
+                              },
+                              {
+                                "name": "Request_Description",
+                                "type": "text",
+                                "label": "Request_Description (D)"
+                              },
+                              {
+                                "name": "Reason",
+                                "type": "text",
+                                "label": "Reason (E)"
+                              },
+                              {
+                                "name": "Timestamp",
+                                "type": "text",
+                                "label": "Timestamp (F)"
+                              },
+                              {
+                                "name": "Priority",
+                                "type": "text",
+                                "label": "Priority (G)"
+                              },
+                              {
+                                "name": "Category",
+                                "type": "text",
+                                "label": "Category (H)"
+                              },
+                              {
+                                "name": "Action",
+                                "type": "text",
+                                "label": "Action (I)"
+                              },
+                              {
+                                "name": "Summary",
+                                "type": "text",
+                                "label": "Summary (J)"
+                              },
+                              {
+                                "name": "Final Decision",
+                                "type": "text",
+                                "label": "Final Decision (K)"
+                              },
+                              {
+                                "name": "Review Status",
+                                "type": "text",
+                                "label": "Review Status (L)"
+                              },
+                              {
+                                "name": "Reviewer Decision",
+                                "type": "text",
+                                "label": "Reviewer Decision (M)"
+                              },
+                              {
+                                "name": "HTTP Status",
+                                "type": "text",
+                                "label": "HTTP Status (N)"
+                              },
+                              {
+                                "name": "Ticket ID",
+                                "type": "text",
+                                "label": "Ticket ID (O)"
+                              },
+                              {
+                                "name": "Execution  Status",
+                                "type": "text",
+                                "label": "Execution  Status (P)"
+                              }
+                            ],
+                            "type": "collection",
+                            "label": "Values in columns",
+                            "metadata": [
+                              [
+                                [
+                                  "Request_ID",
+                                  "Employee_Name",
+                                  "Employee_Email",
+                                  "Request_Description",
+                                  "Reason",
+                                  "Timestamp",
+                                  "Priority",
+                                  "Category",
+                                  "Action",
+                                  "Summary",
+                                  "Final Decision",
+                                  "Review Status",
+                                  "Reviewer Decision",
+                                  "HTTP Status",
+                                  "Ticket ID",
+                                  "Execution  Status"
+                                ]
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 19,
+                      "module": "google-sheets:addRow",
+                      "version": 2,
+                      "parameters": {
+                        "__IMTCONN__": 10079479
+                      },
+                      "filter": {
+                        "name": "NOT FOUND",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{5.`0`}}",
+                              "o": "notexist"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "from": "drive",
+                        "mode": "select",
+                        "values": {
+                          "Request_ID": "{{1.request_id}}",
+                          "Review Status": "INVALID_REQUEST",
+                          "Execution  Status": "NOT_EXECUTED",
+                          "Reviewer Decision": "REJECTED"
+                        },
+                        "sheetId": "Sheet1",
+                        "spreadsheetId": "<REDACTED>",
+                        "includesHeaders": true,
+                        "insertDataOption": "INSERT_ROWS",
+                        "useColumnHeaders": true,
+                        "valueInputOption": "USER_ENTERED",
+                        "insertUnformatted": false
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 1538,
+                          "y": 1201
+                        },
+                        "setupValidation": {
+                          "result": {
+                            "valid": true,
+                            "fields": []
+                          },
+                          "version": 1,
+                          "configuration": "1d42ba275ecdb47"
+                        },
+                        "restore": {
+                          "expect": {
+                            "from": {
+                              "label": "My Drive"
+                            },
+                            "mode": {
+                              "label": "Search by path"
+                            },
+                            "sheetId": {
+                              "label": "Sheet1"
+                            },
+                            "spreadsheetId": {
+                              "path": [
+                                "AI Employee Acces Request Automation"
+                              ]
+                            },
+                            "includesHeaders": {
+                              "label": "Yes"
+                            },
+                            "insertDataOption": {
+                              "mode": "chose",
+                              "label": "Insert rows"
+                            },
+                            "useColumnHeaders": {
+                              "label": "Yes"
+                            },
+                            "valueInputOption": {
+                              "mode": "chose",
+                              "label": "User entered"
+                            },
+                            "insertUnformatted": {
+                              "mode": "chose"
+                            }
+                          },
+                          "parameters": {
+                            "__IMTCONN__": {
+                              "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                              },
+                              "label": "Brian's Google connection (reviewer@example.com)"
+                            }
+                          }
+                        },
+                        "parameters": [
+                          {
+                            "name": "__IMTCONN__",
+                            "type": "account:google",
+                            "label": "Connection",
+                            "required": true
+                          }
+                        ],
+                        "expect": [
+                          {
+                            "name": "mode",
+                            "type": "select",
+                            "label": "Search Method",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "insertUnformatted",
+                            "type": "boolean",
+                            "label": "Unformatted",
+                            "required": true
+                          },
+                          {
+                            "name": "valueInputOption",
+                            "type": "select",
+                            "label": "Value input option",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "insertDataOption",
+                            "type": "select",
+                            "label": "Insert data option",
+                            "validate": {
+                              "enum": [
+                                "INSERT_ROWS",
+                                "OVERWRITE"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "from",
+                            "type": "select",
+                            "label": "Drive",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "spreadsheetId",
+                            "type": "file",
+                            "label": "Spreadsheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "sheetId",
+                            "type": "select",
+                            "label": "Sheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "includesHeaders",
+                            "type": "select",
+                            "label": "Table contains headers",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "useColumnHeaders",
+                            "type": "select",
+                            "label": "Use column headers as IDs of the columns",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "values",
+                            "spec": [
+                              {
+                                "name": "Request_ID",
+                                "type": "text",
+                                "label": "Request_ID (A)"
+                              },
+                              {
+                                "name": "Employee_Name",
+                                "type": "text",
+                                "label": "Employee_Name (B)"
+                              },
+                              {
+                                "name": "Employee_Email",
+                                "type": "text",
+                                "label": "Employee_Email (C)"
+                              },
+                              {
+                                "name": "Request_Description",
+                                "type": "text",
+                                "label": "Request_Description (D)"
+                              },
+                              {
+                                "name": "Reason",
+                                "type": "text",
+                                "label": "Reason (E)"
+                              },
+                              {
+                                "name": "Timestamp",
+                                "type": "text",
+                                "label": "Timestamp (F)"
+                              },
+                              {
+                                "name": "Priority",
+                                "type": "text",
+                                "label": "Priority (G)"
+                              },
+                              {
+                                "name": "Category",
+                                "type": "text",
+                                "label": "Category (H)"
+                              },
+                              {
+                                "name": "Action",
+                                "type": "text",
+                                "label": "Action (I)"
+                              },
+                              {
+                                "name": "Summary",
+                                "type": "text",
+                                "label": "Summary (J)"
+                              },
+                              {
+                                "name": "Final Decision",
+                                "type": "text",
+                                "label": "Final Decision (K)"
+                              },
+                              {
+                                "name": "Review Status",
+                                "type": "text",
+                                "label": "Review Status (L)"
+                              },
+                              {
+                                "name": "Reviewer Decision",
+                                "type": "text",
+                                "label": "Reviewer Decision (M)"
+                              },
+                              {
+                                "name": "HTTP Status",
+                                "type": "text",
+                                "label": "HTTP Status (N)"
+                              },
+                              {
+                                "name": "Ticket ID",
+                                "type": "text",
+                                "label": "Ticket ID (O)"
+                              },
+                              {
+                                "name": "Execution  Status",
+                                "type": "text",
+                                "label": "Execution  Status (P)"
+                              }
+                            ],
+                            "type": "collection",
+                            "label": "Values in columns",
+                            "metadata": [
+                              [
+                                [
+                                  "Request_ID",
+                                  "Employee_Name",
+                                  "Employee_Email",
+                                  "Request_Description",
+                                  "Reason",
+                                  "Timestamp",
+                                  "Priority",
+                                  "Category",
+                                  "Action",
+                                  "Summary",
+                                  "Final Decision",
+                                  "Review Status",
+                                  "Reviewer Decision",
+                                  "HTTP Status",
+                                  "Ticket ID",
+                                  "Execution  Status"
+                                ]
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 6,
+              "module": "google-sheets:filterRows",
+              "version": 2,
+              "parameters": {
+                "__IMTCONN__": 10079479
+              },
+              "filter": {
+                "name": "APPROVED ROUTE",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{1.decision}}",
+                      "b": "APPROVED",
+                      "o": "text:equal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "from": "drive",
+                "limit": "1",
+                "filter": [
+                  [
+                    {
+                      "a": "A",
+                      "b": "{{1.request_id}}",
+                      "o": "text:equal"
+                    }
+                  ]
+                ],
+                "sheetId": "Sheet1",
+                "sortOrder": "asc",
+                "spreadsheetId": "<REDACTED>",
+                "tableFirstRow": "A1:CZ1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 699,
+                  "y": -516
+                },
+                "setupValidation": {
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  },
+                  "version": 1,
+                  "configuration": "4db4169e624d65df"
+                },
+                "restore": {
+                  "expect": {
+                    "from": {
+                      "label": "Select from My Drive"
+                    },
+                    "orderBy": {
+                      "mode": "chose"
+                    },
+                    "sheetId": {
+                      "mode": "chose",
+                      "label": "Sheet1"
+                    },
+                    "sortOrder": {
+                      "mode": "chose",
+                      "label": "Ascending"
+                    },
+                    "spreadsheetId": {
+                      "mode": "chose",
+                      "label": "AI Employee Acces Request Automation"
+                    },
+                    "tableFirstRow": {
+                      "label": "A-CZ"
+                    },
+                    "includesHeaders": {
+                      "mode": "chose",
+                      "label": "Yes"
+                    },
+                    "valueRenderOption": {
+                      "mode": "chose",
+                      "label": "Formatted value"
+                    },
+                    "dateTimeRenderOption": {
+                      "mode": "chose",
+                      "label": "Formatted string"
+                    }
+                  },
+                  "parameters": {
+                    "__IMTCONN__": {
+                      "data": {
+                        "scoped": "true",
+                        "connection": "google"
+                      },
+                      "label": "Brian's Google connection (reviewer@example.com)"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "Search Method",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "valueRenderOption",
+                    "type": "select",
+                    "label": "Value render option",
+                    "validate": {
+                      "enum": [
+                        "FORMATTED_VALUE",
+                        "UNFORMATTED_VALUE",
+                        "FORMULA"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "dateTimeRenderOption",
+                    "type": "select",
+                    "label": "Date and time render option",
+                    "validate": {
+                      "enum": [
+                        "SERIAL_NUMBER",
+                        "FORMATTED_STRING"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "limit",
+                    "type": "uinteger",
+                    "label": "Limit"
+                  },
+                  {
+                    "name": "spreadsheetId",
+                    "type": "select",
+                    "label": "Spreadsheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "sheetId",
+                    "type": "select",
+                    "label": "Sheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "includesHeaders",
+                    "type": "select",
+                    "label": "Table contains headers",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "tableFirstRow",
+                    "type": "select",
+                    "label": "Column range",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "A1:Z1",
+                        "A1:BZ1",
+                        "A1:CZ1",
+                        "A1:DZ1",
+                        "A1:MZ1",
+                        "A1:ZZ1",
+                        "A1:AZZ1",
+                        "A1:BZZ1",
+                        "A1:CZZ1",
+                        "A1:DZZ1",
+                        "A1:MZZ1",
+                        "A1:ZZZ1"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "filter",
+                    "type": "filter",
+                    "label": "Filter",
+                    "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                  },
+                  {
+                    "name": "orderBy",
+                    "type": "select",
+                    "label": "Order by"
+                  },
+                  {
+                    "name": "sortOrder",
+                    "type": "select",
+                    "label": "Sort order",
+                    "validate": {
+                      "enum": [
+                        "asc",
+                        "desc"
+                      ]
+                    }
+                  }
+                ],
+                "interface": [
+                  {
+                    "name": "__IMTLENGTH__",
+                    "type": "uinteger",
+                    "label": "Total number of bundles"
+                  },
+                  {
+                    "name": "__IMTINDEX__",
+                    "type": "uinteger",
+                    "label": "Bundle order position"
+                  },
+                  {
+                    "name": "__ROW_NUMBER__",
+                    "type": "number",
+                    "label": "Row number"
+                  },
+                  {
+                    "name": "__SPREADSHEET_ID__",
+                    "type": "text",
+                    "label": "Spreadsheet ID"
+                  },
+                  {
+                    "name": "__SHEET__",
+                    "type": "text",
+                    "label": "Sheet"
+                  },
+                  {
+                    "name": "0",
+                    "type": "text",
+                    "label": "Request_ID (A)"
+                  },
+                  {
+                    "name": "1",
+                    "type": "text",
+                    "label": "Employee_Name (B)"
+                  },
+                  {
+                    "name": "2",
+                    "type": "text",
+                    "label": "Employee_Email (C)"
+                  },
+                  {
+                    "name": "3",
+                    "type": "text",
+                    "label": "Request_Description (D)"
+                  },
+                  {
+                    "name": "4",
+                    "type": "text",
+                    "label": "Reason (E)"
+                  },
+                  {
+                    "name": "5",
+                    "type": "text",
+                    "label": "Timestamp (F)"
+                  },
+                  {
+                    "name": "6",
+                    "type": "text",
+                    "label": "Priority (G)"
+                  },
+                  {
+                    "name": "7",
+                    "type": "text",
+                    "label": "Category (H)"
+                  },
+                  {
+                    "name": "8",
+                    "type": "text",
+                    "label": "Action (I)"
+                  },
+                  {
+                    "name": "9",
+                    "type": "text",
+                    "label": "Summary (J)"
+                  },
+                  {
+                    "name": "10",
+                    "type": "text",
+                    "label": "Final Decision (K)"
+                  },
+                  {
+                    "name": "11",
+                    "type": "text",
+                    "label": "Review Status (L)"
+                  },
+                  {
+                    "name": "12",
+                    "type": "text",
+                    "label": "Reviewer Decision (M)"
+                  },
+                  {
+                    "name": "13",
+                    "type": "text",
+                    "label": "HTTP Status (N)"
+                  },
+                  {
+                    "name": "14",
+                    "type": "text",
+                    "label": "Ticket ID (O)"
+                  },
+                  {
+                    "name": "15",
+                    "type": "text",
+                    "label": "Execution  Status (P)"
+                  },
+                  {
+                    "name": "16",
+                    "type": "text",
+                    "label": "(Q)"
+                  },
+                  {
+                    "name": "17",
+                    "type": "text",
+                    "label": "(R)"
+                  },
+                  {
+                    "name": "18",
+                    "type": "text",
+                    "label": "(S)"
+                  },
+                  {
+                    "name": "19",
+                    "type": "text",
+                    "label": "(T)"
+                  },
+                  {
+                    "name": "20",
+                    "type": "text",
+                    "label": "(U)"
+                  },
+                  {
+                    "name": "21",
+                    "type": "text",
+                    "label": "(V)"
+                  },
+                  {
+                    "name": "22",
+                    "type": "text",
+                    "label": "(W)"
+                  },
+                  {
+                    "name": "23",
+                    "type": "text",
+                    "label": "(X)"
+                  },
+                  {
+                    "name": "24",
+                    "type": "text",
+                    "label": "(Y)"
+                  },
+                  {
+                    "name": "25",
+                    "type": "text",
+                    "label": "(Z)"
+                  },
+                  {
+                    "name": "26",
+                    "type": "text",
+                    "label": "(AA)"
+                  },
+                  {
+                    "name": "27",
+                    "type": "text",
+                    "label": "(AB)"
+                  },
+                  {
+                    "name": "28",
+                    "type": "text",
+                    "label": "(AC)"
+                  },
+                  {
+                    "name": "29",
+                    "type": "text",
+                    "label": "(AD)"
+                  },
+                  {
+                    "name": "30",
+                    "type": "text",
+                    "label": "(AE)"
+                  },
+                  {
+                    "name": "31",
+                    "type": "text",
+                    "label": "(AF)"
+                  },
+                  {
+                    "name": "32",
+                    "type": "text",
+                    "label": "(AG)"
+                  },
+                  {
+                    "name": "33",
+                    "type": "text",
+                    "label": "(AH)"
+                  },
+                  {
+                    "name": "34",
+                    "type": "text",
+                    "label": "(AI)"
+                  },
+                  {
+                    "name": "35",
+                    "type": "text",
+                    "label": "(AJ)"
+                  },
+                  {
+                    "name": "36",
+                    "type": "text",
+                    "label": "(AK)"
+                  },
+                  {
+                    "name": "37",
+                    "type": "text",
+                    "label": "(AL)"
+                  },
+                  {
+                    "name": "38",
+                    "type": "text",
+                    "label": "(AM)"
+                  },
+                  {
+                    "name": "39",
+                    "type": "text",
+                    "label": "(AN)"
+                  },
+                  {
+                    "name": "40",
+                    "type": "text",
+                    "label": "(AO)"
+                  },
+                  {
+                    "name": "41",
+                    "type": "text",
+                    "label": "(AP)"
+                  },
+                  {
+                    "name": "42",
+                    "type": "text",
+                    "label": "(AQ)"
+                  },
+                  {
+                    "name": "43",
+                    "type": "text",
+                    "label": "(AR)"
+                  },
+                  {
+                    "name": "44",
+                    "type": "text",
+                    "label": "(AS)"
+                  },
+                  {
+                    "name": "45",
+                    "type": "text",
+                    "label": "(AT)"
+                  },
+                  {
+                    "name": "46",
+                    "type": "text",
+                    "label": "(AU)"
+                  },
+                  {
+                    "name": "47",
+                    "type": "text",
+                    "label": "(AV)"
+                  },
+                  {
+                    "name": "48",
+                    "type": "text",
+                    "label": "(AW)"
+                  },
+                  {
+                    "name": "49",
+                    "type": "text",
+                    "label": "(AX)"
+                  },
+                  {
+                    "name": "50",
+                    "type": "text",
+                    "label": "(AY)"
+                  },
+                  {
+                    "name": "51",
+                    "type": "text",
+                    "label": "(AZ)"
+                  },
+                  {
+                    "name": "52",
+                    "type": "text",
+                    "label": "(BA)"
+                  },
+                  {
+                    "name": "53",
+                    "type": "text",
+                    "label": "(BB)"
+                  },
+                  {
+                    "name": "54",
+                    "type": "text",
+                    "label": "(BC)"
+                  },
+                  {
+                    "name": "55",
+                    "type": "text",
+                    "label": "(BD)"
+                  },
+                  {
+                    "name": "56",
+                    "type": "text",
+                    "label": "(BE)"
+                  },
+                  {
+                    "name": "57",
+                    "type": "text",
+                    "label": "(BF)"
+                  },
+                  {
+                    "name": "58",
+                    "type": "text",
+                    "label": "(BG)"
+                  },
+                  {
+                    "name": "59",
+                    "type": "text",
+                    "label": "(BH)"
+                  },
+                  {
+                    "name": "60",
+                    "type": "text",
+                    "label": "(BI)"
+                  },
+                  {
+                    "name": "61",
+                    "type": "text",
+                    "label": "(BJ)"
+                  },
+                  {
+                    "name": "62",
+                    "type": "text",
+                    "label": "(BK)"
+                  },
+                  {
+                    "name": "63",
+                    "type": "text",
+                    "label": "(BL)"
+                  },
+                  {
+                    "name": "64",
+                    "type": "text",
+                    "label": "(BM)"
+                  },
+                  {
+                    "name": "65",
+                    "type": "text",
+                    "label": "(BN)"
+                  },
+                  {
+                    "name": "66",
+                    "type": "text",
+                    "label": "(BO)"
+                  },
+                  {
+                    "name": "67",
+                    "type": "text",
+                    "label": "(BP)"
+                  },
+                  {
+                    "name": "68",
+                    "type": "text",
+                    "label": "(BQ)"
+                  },
+                  {
+                    "name": "69",
+                    "type": "text",
+                    "label": "(BR)"
+                  },
+                  {
+                    "name": "70",
+                    "type": "text",
+                    "label": "(BS)"
+                  },
+                  {
+                    "name": "71",
+                    "type": "text",
+                    "label": "(BT)"
+                  },
+                  {
+                    "name": "72",
+                    "type": "text",
+                    "label": "(BU)"
+                  },
+                  {
+                    "name": "73",
+                    "type": "text",
+                    "label": "(BV)"
+                  },
+                  {
+                    "name": "74",
+                    "type": "text",
+                    "label": "(BW)"
+                  },
+                  {
+                    "name": "75",
+                    "type": "text",
+                    "label": "(BX)"
+                  },
+                  {
+                    "name": "76",
+                    "type": "text",
+                    "label": "(BY)"
+                  },
+                  {
+                    "name": "77",
+                    "type": "text",
+                    "label": "(BZ)"
+                  },
+                  {
+                    "name": "78",
+                    "type": "text",
+                    "label": "(CA)"
+                  },
+                  {
+                    "name": "79",
+                    "type": "text",
+                    "label": "(CB)"
+                  },
+                  {
+                    "name": "80",
+                    "type": "text",
+                    "label": "(CC)"
+                  },
+                  {
+                    "name": "81",
+                    "type": "text",
+                    "label": "(CD)"
+                  },
+                  {
+                    "name": "82",
+                    "type": "text",
+                    "label": "(CE)"
+                  },
+                  {
+                    "name": "83",
+                    "type": "text",
+                    "label": "(CF)"
+                  },
+                  {
+                    "name": "84",
+                    "type": "text",
+                    "label": "(CG)"
+                  },
+                  {
+                    "name": "85",
+                    "type": "text",
+                    "label": "(CH)"
+                  },
+                  {
+                    "name": "86",
+                    "type": "text",
+                    "label": "(CI)"
+                  },
+                  {
+                    "name": "87",
+                    "type": "text",
+                    "label": "(CJ)"
+                  },
+                  {
+                    "name": "88",
+                    "type": "text",
+                    "label": "(CK)"
+                  },
+                  {
+                    "name": "89",
+                    "type": "text",
+                    "label": "(CL)"
+                  },
+                  {
+                    "name": "90",
+                    "type": "text",
+                    "label": "(CM)"
+                  },
+                  {
+                    "name": "91",
+                    "type": "text",
+                    "label": "(CN)"
+                  },
+                  {
+                    "name": "92",
+                    "type": "text",
+                    "label": "(CO)"
+                  },
+                  {
+                    "name": "93",
+                    "type": "text",
+                    "label": "(CP)"
+                  },
+                  {
+                    "name": "94",
+                    "type": "text",
+                    "label": "(CQ)"
+                  },
+                  {
+                    "name": "95",
+                    "type": "text",
+                    "label": "(CR)"
+                  },
+                  {
+                    "name": "96",
+                    "type": "text",
+                    "label": "(CS)"
+                  },
+                  {
+                    "name": "97",
+                    "type": "text",
+                    "label": "(CT)"
+                  },
+                  {
+                    "name": "98",
+                    "type": "text",
+                    "label": "(CU)"
+                  },
+                  {
+                    "name": "99",
+                    "type": "text",
+                    "label": "(CV)"
+                  },
+                  {
+                    "name": "100",
+                    "type": "text",
+                    "label": "(CW)"
+                  },
+                  {
+                    "name": "101",
+                    "type": "text",
+                    "label": "(CX)"
+                  },
+                  {
+                    "name": "102",
+                    "type": "text",
+                    "label": "(CY)"
+                  },
+                  {
+                    "name": "103",
+                    "type": "text",
+                    "label": "(CZ)"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 11,
+              "module": "builtin:BasicRouter",
+              "version": 1,
+              "parameters": {
+                "else": 1
+              },
+              "mapper": null,
+              "metadata": {
+                "designer": {
+                  "x": 1208,
+                  "y": -575
+                }
+              },
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 12,
+                      "module": "google-sheets:updateRow",
+                      "version": 2,
+                      "parameters": {
+                        "__IMTCONN__": 10079479
+                      },
+                      "filter": {
+                        "name": "FOUND PATH",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{6.`0`}}",
+                              "o": "exist"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "from": "drive",
+                        "mode": "select",
+                        "values": {
+                          "Review Status": "COMPLETED",
+                          "Reviewer Decision": "APPROVED"
+                        },
+                        "sheetId": "Sheet1",
+                        "rowNumber": "{{6.`__ROW_NUMBER__`}}",
+                        "spreadsheetId": "<REDACTED>",
+                        "includesHeaders": true,
+                        "useColumnHeaders": true,
+                        "valueInputOption": "USER_ENTERED"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 1709,
+                          "y": -655
+                        },
+                        "setupValidation": {
+                          "result": {
+                            "valid": true,
+                            "fields": []
+                          },
+                          "version": 1,
+                          "configuration": "12ecba653799e0b"
+                        },
+                        "restore": {
+                          "expect": {
+                            "from": {
+                              "label": "My Drive"
+                            },
+                            "mode": {
+                              "label": "Search by path"
+                            },
+                            "sheetId": {
+                              "label": "Sheet1"
+                            },
+                            "spreadsheetId": {
+                              "path": [
+                                "AI Employee Acces Request Automation"
+                              ]
+                            },
+                            "includesHeaders": {
+                              "label": "Yes"
+                            },
+                            "useColumnHeaders": {
+                              "label": "Yes"
+                            },
+                            "valueInputOption": {
+                              "mode": "chose",
+                              "label": "User entered"
+                            }
+                          },
+                          "parameters": {
+                            "__IMTCONN__": {
+                              "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                              },
+                              "label": "Brian's Google connection (reviewer@example.com)"
+                            }
+                          }
+                        },
+                        "parameters": [
+                          {
+                            "name": "__IMTCONN__",
+                            "type": "account:google",
+                            "label": "Connection",
+                            "required": true
+                          }
+                        ],
+                        "expect": [
+                          {
+                            "name": "mode",
+                            "type": "select",
+                            "label": "Search Method",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "valueInputOption",
+                            "type": "select",
+                            "label": "Value input option",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "from",
+                            "type": "select",
+                            "label": "Drive",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "spreadsheetId",
+                            "type": "file",
+                            "label": "Spreadsheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "sheetId",
+                            "type": "select",
+                            "label": "Sheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "rowNumber",
+                            "type": "uinteger",
+                            "label": "Row number",
+                            "required": true
+                          },
+                          {
+                            "name": "includesHeaders",
+                            "type": "select",
+                            "label": "Table contains headers",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "useColumnHeaders",
+                            "type": "select",
+                            "label": "Use column headers as IDs of the columns",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "values",
+                            "spec": [
+                              {
+                                "name": "Request_ID",
+                                "type": "text",
+                                "label": "Request_ID (A)"
+                              },
+                              {
+                                "name": "Employee_Name",
+                                "type": "text",
+                                "label": "Employee_Name (B)"
+                              },
+                              {
+                                "name": "Employee_Email",
+                                "type": "text",
+                                "label": "Employee_Email (C)"
+                              },
+                              {
+                                "name": "Request_Description",
+                                "type": "text",
+                                "label": "Request_Description (D)"
+                              },
+                              {
+                                "name": "Reason",
+                                "type": "text",
+                                "label": "Reason (E)"
+                              },
+                              {
+                                "name": "Timestamp",
+                                "type": "text",
+                                "label": "Timestamp (F)"
+                              },
+                              {
+                                "name": "Priority",
+                                "type": "text",
+                                "label": "Priority (G)"
+                              },
+                              {
+                                "name": "Category",
+                                "type": "text",
+                                "label": "Category (H)"
+                              },
+                              {
+                                "name": "Action",
+                                "type": "text",
+                                "label": "Action (I)"
+                              },
+                              {
+                                "name": "Summary",
+                                "type": "text",
+                                "label": "Summary (J)"
+                              },
+                              {
+                                "name": "Final Decision",
+                                "type": "text",
+                                "label": "Final Decision (K)"
+                              },
+                              {
+                                "name": "Review Status",
+                                "type": "text",
+                                "label": "Review Status (L)"
+                              },
+                              {
+                                "name": "Reviewer Decision",
+                                "type": "text",
+                                "label": "Reviewer Decision (M)"
+                              },
+                              {
+                                "name": "HTTP Status",
+                                "type": "text",
+                                "label": "HTTP Status (N)"
+                              },
+                              {
+                                "name": "Ticket ID",
+                                "type": "text",
+                                "label": "Ticket ID (O)"
+                              },
+                              {
+                                "name": "Execution  Status",
+                                "type": "text",
+                                "label": "Execution  Status (P)"
+                              }
+                            ],
+                            "type": "collection",
+                            "label": "Values in columns",
+                            "metadata": [
+                              [
+                                [
+                                  "Request_ID",
+                                  "Employee_Name",
+                                  "Employee_Email",
+                                  "Request_Description",
+                                  "Reason",
+                                  "Timestamp",
+                                  "Priority",
+                                  "Category",
+                                  "Action",
+                                  "Summary",
+                                  "Final Decision",
+                                  "Review Status",
+                                  "Reviewer Decision",
+                                  "HTTP Status",
+                                  "Ticket ID",
+                                  "Execution  Status"
+                                ]
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "id": 14,
+                      "module": "http:MakeRequest",
+                      "version": 4,
+                      "parameters": {
+                        "tlsType": "",
+                        "authenticationType": "noAuth"
+                      },
+                      "mapper": {
+                        "url": "https://httpbin.org/post",
+                        "method": "post",
+                        "headers": [
+                          {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                          },
+                          {
+                            "name": "Idempotency-Key",
+                            "value": "{{6.`0`}}"
+                          }
+                        ],
+                        "timeout": "40",
+                        "contentType": "json",
+                        "inputMethod": "jsonString",
+                        "shareCookies": false,
+                        "parseResponse": true,
+                        "allowRedirects": true,
+                        "stopOnHttpError": true,
+                        "jsonStringBodyContent": "{\n \"request_id\": \"{{6.`0`}}\",\n \"employee_name\": \"{{6.`1`}}\",\n \"employee_email\": \"{{6.`2`}}\",\n \"department\": \"\",\n \"request_description\": \"{{6.`3`}}\",\n \"reason\": \"{{6.`4`}}\",\n \"timestamp\": \"{{6.`5`}}\",\n \"priority\": \"{{6.`6`}}\",\n \"category\": \"{{6.`7`}}\",\n \"action\": \"{{6.`8`}}\",\n \"summary\": \"{{6.`9`}}\",\n \"final_decision\": \"HUMAN_REVIEW\",\n \"reviewer_decision\": \"APPROVED\"\n}",
+                        "requestCompressedContent": true
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2246,
+                          "y": -656
+                        },
+                        "setupValidation": {
+                          "result": {
+                            "valid": true,
+                            "fields": []
+                          },
+                          "version": 1,
+                          "configuration": "d037f9c5618525f7"
+                        },
+                        "restore": {
+                          "expect": {
+                            "method": {
+                              "mode": "chose",
+                              "label": "POST"
+                            },
+                            "headers": {
+                              "mode": "chose",
+                              "items": [
+                                null,
+                                null
+                              ]
+                            },
+                            "contentType": {
+                              "label": "application/jsonEnter data in the JSON format, as a string or using a data structure."
+                            },
+                            "inputMethod": {
+                              "label": "JSON stringEnter the JSON body as a raw text string. If values contain JSON reserved characters, you must escape them manually."
+                            },
+                            "shareCookies": {
+                              "mode": "chose"
+                            },
+                            "parseResponse": {
+                              "mode": "chose"
+                            },
+                            "allowRedirects": {
+                              "mode": "chose"
+                            },
+                            "paginationType": {
+                              "label": "Empty"
+                            },
+                            "queryParameters": {
+                              "mode": "chose"
+                            },
+                            "stopOnHttpError": {
+                              "mode": "chose"
+                            },
+                            "requestCompressedContent": {
+                              "mode": "chose"
+                            }
+                          },
+                          "parameters": {
+                            "tlsType": {
+                              "label": "Empty"
+                            },
+                            "authenticationType": {
+                              "label": "No authenticationUse when no credentials are required for the request."
+                            }
+                          }
+                        },
+                        "parameters": [
+                          {
+                            "name": "authenticationType",
+                            "type": "select",
+                            "label": "Authentication type",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "noAuth",
+                                "apiKey",
+                                "basicAuth",
+                                "oAuth"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "tlsType",
+                            "type": "select",
+                            "label": "Transport layer security (TLS)",
+                            "validate": {
+                              "enum": [
+                                "mTls",
+                                "tls"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "proxyKeychain",
+                            "type": "keychain:proxy",
+                            "label": "Proxy"
+                          }
+                        ],
+                        "expect": [
+                          {
+                            "name": "url",
+                            "type": "url",
+                            "label": "URL",
+                            "required": true
+                          },
+                          {
+                            "name": "method",
+                            "type": "select",
+                            "label": "Method",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "get",
+                                "head",
+                                "post",
+                                "put",
+                                "patch",
+                                "delete",
+                                "options"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "headers",
+                            "spec": {
+                              "name": "value",
+                              "spec": [
+                                {
+                                  "name": "name",
+                                  "type": "text",
+                                  "label": "Name",
+                                  "required": true,
+                                  "validate": {
+                                    "pattern": "^[-!#$%&'*+.^_`|~0-9A-Za-z]+$"
+                                  }
+                                },
+                                {
+                                  "name": "value",
+                                  "type": "text",
+                                  "label": "Value"
+                                }
+                              ],
+                              "type": "collection",
+                              "label": "Header"
+                            },
+                            "type": "array",
+                            "label": "Headers"
+                          },
+                          {
+                            "name": "queryParameters",
+                            "spec": {
+                              "name": "value",
+                              "spec": [
+                                {
+                                  "name": "name",
+                                  "type": "text",
+                                  "label": "Name",
+                                  "required": true
+                                },
+                                {
+                                  "name": "value",
+                                  "type": "text",
+                                  "label": "Value"
+                                }
+                              ],
+                              "type": "collection",
+                              "label": "Parameter"
+                            },
+                            "type": "array",
+                            "label": "Query parameters"
+                          },
+                          {
+                            "name": "contentType",
+                            "type": "select",
+                            "label": "Body content type",
+                            "validate": {
+                              "enum": [
+                                "json",
+                                "multipart",
+                                "urlEncoded",
+                                "custom"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "parseResponse",
+                            "type": "boolean",
+                            "label": "Parse response",
+                            "required": true
+                          },
+                          {
+                            "name": "stopOnHttpError",
+                            "type": "boolean",
+                            "label": "Return error if HTTP request fails",
+                            "required": true
+                          },
+                          {
+                            "name": "timeout",
+                            "type": "uinteger",
+                            "label": "Timeout",
+                            "validate": {
+                              "max": 300,
+                              "min": 1
+                            }
+                          },
+                          {
+                            "name": "allowRedirects",
+                            "type": "boolean",
+                            "label": "Allow redirects",
+                            "required": true
+                          },
+                          {
+                            "name": "shareCookies",
+                            "type": "boolean",
+                            "label": "Share cookies with other HTTP modules",
+                            "required": true
+                          },
+                          {
+                            "name": "requestCompressedContent",
+                            "type": "boolean",
+                            "label": "Request compressed content",
+                            "required": true
+                          },
+                          {
+                            "name": "inputMethod",
+                            "type": "select",
+                            "label": "Body input method",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "dataStructure",
+                                "jsonString"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "jsonStringBodyContent",
+                            "type": "text",
+                            "label": "Body content",
+                            "required": true
+                          },
+                          {
+                            "name": "paginationType",
+                            "type": "select",
+                            "label": "Pagination type",
+                            "validate": {
+                              "enum": [
+                                "offsetBased",
+                                "pageBased",
+                                "urlBased",
+                                "tokenBased"
+                              ]
+                            }
+                          }
+                        ],
+                        "interface": [
+                          {
+                            "name": "data",
+                            "type": "any",
+                            "label": "Data"
+                          },
+                          {
+                            "name": "statusCode",
+                            "type": "number",
+                            "label": "Status Code"
+                          },
+                          {
+                            "name": "headers",
+                            "spec": [
+                              {
+                                "name": "content-length",
+                                "type": "text",
+                                "label": "Content-Length"
+                              },
+                              {
+                                "name": "content-encoding",
+                                "type": "text",
+                                "label": "Content-Encoding"
+                              },
+                              {
+                                "name": "content-type",
+                                "type": "text",
+                                "label": "Content-Type"
+                              },
+                              {
+                                "name": "server",
+                                "type": "text",
+                                "label": "Server"
+                              },
+                              {
+                                "name": "cache-control",
+                                "type": "text",
+                                "label": "Cache-Control"
+                              },
+                              {
+                                "name": "set-cookie",
+                                "spec": {
+                                  "type": "text"
+                                },
+                                "type": "array",
+                                "label": "Set-Cookie"
+                              }
+                            ],
+                            "type": "collection",
+                            "label": "Headers"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "id": 15,
+                      "module": "google-sheets:updateRow",
+                      "version": 2,
+                      "parameters": {
+                        "__IMTCONN__": 10079479
+                      },
+                      "mapper": {
+                        "from": "drive",
+                        "mode": "select",
+                        "values": {
+                          "HTTP Status": "{{14.statusCode}}",
+                          "Review Status": "COMPLETED",
+                          "Final Decision": "HUMAN_REVIEW",
+                          "Execution  Status": "EXECUTED",
+                          "Reviewer Decision": "APPROVED"
+                        },
+                        "sheetId": "Sheet1",
+                        "rowNumber": "{{6.`__ROW_NUMBER__`}}",
+                        "spreadsheetId": "<REDACTED>",
+                        "includesHeaders": true,
+                        "useColumnHeaders": true,
+                        "valueInputOption": "USER_ENTERED"
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 2785,
+                          "y": -656
+                        },
+                        "setupValidation": {
+                          "result": {
+                            "valid": true,
+                            "fields": []
+                          },
+                          "version": 1,
+                          "configuration": "13757aadcb603630"
+                        },
+                        "restore": {
+                          "expect": {
+                            "from": {
+                              "label": "My Drive"
+                            },
+                            "mode": {
+                              "label": "Search by path"
+                            },
+                            "sheetId": {
+                              "label": "Sheet1"
+                            },
+                            "spreadsheetId": {
+                              "path": [
+                                "AI Employee Acces Request Automation"
+                              ]
+                            },
+                            "includesHeaders": {
+                              "label": "Yes"
+                            },
+                            "useColumnHeaders": {
+                              "label": "Yes"
+                            },
+                            "valueInputOption": {
+                              "mode": "chose",
+                              "label": "User entered"
+                            }
+                          },
+                          "parameters": {
+                            "__IMTCONN__": {
+                              "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                              },
+                              "label": "Brian's Google connection (reviewer@example.com)"
+                            }
+                          }
+                        },
+                        "parameters": [
+                          {
+                            "name": "__IMTCONN__",
+                            "type": "account:google",
+                            "label": "Connection",
+                            "required": true
+                          }
+                        ],
+                        "expect": [
+                          {
+                            "name": "mode",
+                            "type": "select",
+                            "label": "Search Method",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "valueInputOption",
+                            "type": "select",
+                            "label": "Value input option",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "from",
+                            "type": "select",
+                            "label": "Drive",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "spreadsheetId",
+                            "type": "file",
+                            "label": "Spreadsheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "sheetId",
+                            "type": "select",
+                            "label": "Sheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "rowNumber",
+                            "type": "uinteger",
+                            "label": "Row number",
+                            "required": true
+                          },
+                          {
+                            "name": "includesHeaders",
+                            "type": "select",
+                            "label": "Table contains headers",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "useColumnHeaders",
+                            "type": "select",
+                            "label": "Use column headers as IDs of the columns",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "values",
+                            "spec": [
+                              {
+                                "name": "Request_ID",
+                                "type": "text",
+                                "label": "Request_ID (A)"
+                              },
+                              {
+                                "name": "Employee_Name",
+                                "type": "text",
+                                "label": "Employee_Name (B)"
+                              },
+                              {
+                                "name": "Employee_Email",
+                                "type": "text",
+                                "label": "Employee_Email (C)"
+                              },
+                              {
+                                "name": "Request_Description",
+                                "type": "text",
+                                "label": "Request_Description (D)"
+                              },
+                              {
+                                "name": "Reason",
+                                "type": "text",
+                                "label": "Reason (E)"
+                              },
+                              {
+                                "name": "Timestamp",
+                                "type": "text",
+                                "label": "Timestamp (F)"
+                              },
+                              {
+                                "name": "Priority",
+                                "type": "text",
+                                "label": "Priority (G)"
+                              },
+                              {
+                                "name": "Category",
+                                "type": "text",
+                                "label": "Category (H)"
+                              },
+                              {
+                                "name": "Action",
+                                "type": "text",
+                                "label": "Action (I)"
+                              },
+                              {
+                                "name": "Summary",
+                                "type": "text",
+                                "label": "Summary (J)"
+                              },
+                              {
+                                "name": "Final Decision",
+                                "type": "text",
+                                "label": "Final Decision (K)"
+                              },
+                              {
+                                "name": "Review Status",
+                                "type": "text",
+                                "label": "Review Status (L)"
+                              },
+                              {
+                                "name": "Reviewer Decision",
+                                "type": "text",
+                                "label": "Reviewer Decision (M)"
+                              },
+                              {
+                                "name": "HTTP Status",
+                                "type": "text",
+                                "label": "HTTP Status (N)"
+                              },
+                              {
+                                "name": "Ticket ID",
+                                "type": "text",
+                                "label": "Ticket ID (O)"
+                              },
+                              {
+                                "name": "Execution  Status",
+                                "type": "text",
+                                "label": "Execution  Status (P)"
+                              }
+                            ],
+                            "type": "collection",
+                            "label": "Values in columns",
+                            "metadata": [
+                              [
+                                [
+                                  "Request_ID",
+                                  "Employee_Name",
+                                  "Employee_Email",
+                                  "Request_Description",
+                                  "Reason",
+                                  "Timestamp",
+                                  "Priority",
+                                  "Category",
+                                  "Action",
+                                  "Summary",
+                                  "Final Decision",
+                                  "Review Status",
+                                  "Reviewer Decision",
+                                  "HTTP Status",
+                                  "Ticket ID",
+                                  "Execution  Status"
+                                ]
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 16,
+                      "module": "google-sheets:addRow",
+                      "version": 2,
+                      "parameters": {
+                        "__IMTCONN__": 10079479
+                      },
+                      "filter": {
+                        "name": "NOT FOUND PATH",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{6.`0`}}",
+                              "o": "notexist"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "from": "drive",
+                        "mode": "select",
+                        "values": {
+                          "Request_ID": "{{1.request_id}}",
+                          "Review Status": "INVALID_REQUEST",
+                          "Execution  Status": "NOT_EXECUTED",
+                          "Reviewer Decision": "APPROVED"
+                        },
+                        "sheetId": "Sheet1",
+                        "spreadsheetId": "<REDACTED>",
+                        "includesHeaders": true,
+                        "insertDataOption": "INSERT_ROWS",
+                        "useColumnHeaders": true,
+                        "valueInputOption": "USER_ENTERED",
+                        "insertUnformatted": false
+                      },
+                      "metadata": {
+                        "designer": {
+                          "x": 1471,
+                          "y": 68
+                        },
+                        "setupValidation": {
+                          "result": {
+                            "valid": true,
+                            "fields": []
+                          },
+                          "version": 1,
+                          "configuration": "79c929709443de5a"
+                        },
+                        "restore": {
+                          "expect": {
+                            "from": {
+                              "label": "My Drive"
+                            },
+                            "mode": {
+                              "label": "Search by path"
+                            },
+                            "sheetId": {
+                              "label": "Sheet1"
+                            },
+                            "spreadsheetId": {
+                              "path": [
+                                "AI Employee Acces Request Automation"
+                              ]
+                            },
+                            "includesHeaders": {
+                              "label": "Yes"
+                            },
+                            "insertDataOption": {
+                              "mode": "chose",
+                              "label": "Insert rows"
+                            },
+                            "useColumnHeaders": {
+                              "label": "Yes"
+                            },
+                            "valueInputOption": {
+                              "mode": "chose",
+                              "label": "User entered"
+                            },
+                            "insertUnformatted": {
+                              "mode": "chose"
+                            }
+                          },
+                          "parameters": {
+                            "__IMTCONN__": {
+                              "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                              },
+                              "label": "Brian's Google connection (reviewer@example.com)"
+                            }
+                          }
+                        },
+                        "parameters": [
+                          {
+                            "name": "__IMTCONN__",
+                            "type": "account:google",
+                            "label": "Connection",
+                            "required": true
+                          }
+                        ],
+                        "expect": [
+                          {
+                            "name": "mode",
+                            "type": "select",
+                            "label": "Search Method",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "insertUnformatted",
+                            "type": "boolean",
+                            "label": "Unformatted",
+                            "required": true
+                          },
+                          {
+                            "name": "valueInputOption",
+                            "type": "select",
+                            "label": "Value input option",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "insertDataOption",
+                            "type": "select",
+                            "label": "Insert data option",
+                            "validate": {
+                              "enum": [
+                                "INSERT_ROWS",
+                                "OVERWRITE"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "from",
+                            "type": "select",
+                            "label": "Drive",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "spreadsheetId",
+                            "type": "file",
+                            "label": "Spreadsheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "sheetId",
+                            "type": "select",
+                            "label": "Sheet Name",
+                            "required": true
+                          },
+                          {
+                            "name": "includesHeaders",
+                            "type": "select",
+                            "label": "Table contains headers",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "useColumnHeaders",
+                            "type": "select",
+                            "label": "Use column headers as IDs of the columns",
+                            "required": true,
+                            "validate": {
+                              "enum": [
+                                true,
+                                false
+                              ]
+                            }
+                          },
+                          {
+                            "name": "values",
+                            "spec": [
+                              {
+                                "name": "Request_ID",
+                                "type": "text",
+                                "label": "Request_ID (A)"
+                              },
+                              {
+                                "name": "Employee_Name",
+                                "type": "text",
+                                "label": "Employee_Name (B)"
+                              },
+                              {
+                                "name": "Employee_Email",
+                                "type": "text",
+                                "label": "Employee_Email (C)"
+                              },
+                              {
+                                "name": "Request_Description",
+                                "type": "text",
+                                "label": "Request_Description (D)"
+                              },
+                              {
+                                "name": "Reason",
+                                "type": "text",
+                                "label": "Reason (E)"
+                              },
+                              {
+                                "name": "Timestamp",
+                                "type": "text",
+                                "label": "Timestamp (F)"
+                              },
+                              {
+                                "name": "Priority",
+                                "type": "text",
+                                "label": "Priority (G)"
+                              },
+                              {
+                                "name": "Category",
+                                "type": "text",
+                                "label": "Category (H)"
+                              },
+                              {
+                                "name": "Action",
+                                "type": "text",
+                                "label": "Action (I)"
+                              },
+                              {
+                                "name": "Summary",
+                                "type": "text",
+                                "label": "Summary (J)"
+                              },
+                              {
+                                "name": "Final Decision",
+                                "type": "text",
+                                "label": "Final Decision (K)"
+                              },
+                              {
+                                "name": "Review Status",
+                                "type": "text",
+                                "label": "Review Status (L)"
+                              },
+                              {
+                                "name": "Reviewer Decision",
+                                "type": "text",
+                                "label": "Reviewer Decision (M)"
+                              },
+                              {
+                                "name": "HTTP Status",
+                                "type": "text",
+                                "label": "HTTP Status (N)"
+                              },
+                              {
+                                "name": "Ticket ID",
+                                "type": "text",
+                                "label": "Ticket ID (O)"
+                              },
+                              {
+                                "name": "Execution  Status",
+                                "type": "text",
+                                "label": "Execution  Status (P)"
+                              }
+                            ],
+                            "type": "collection",
+                            "label": "Values in columns",
+                            "metadata": [
+                              [
+                                [
+                                  "Request_ID",
+                                  "Employee_Name",
+                                  "Employee_Email",
+                                  "Request_Description",
+                                  "Reason",
+                                  "Timestamp",
+                                  "Priority",
+                                  "Category",
+                                  "Action",
+                                  "Summary",
+                                  "Final Decision",
+                                  "Review Status",
+                                  "Reviewer Decision",
+                                  "HTTP Status",
+                                  "Ticket ID",
+                                  "Execution  Status"
+                                ]
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "slots": null,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "eu1.make.com",
+    "notes": []
+  }
+}

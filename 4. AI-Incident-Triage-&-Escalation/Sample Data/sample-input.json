@@ -1,0 +1,6 @@
+{
+  "incident_id": "INC-1001",
+  "description": "Multiple failed login attempts were detected for a user account.",
+  "source": "Security monitoring",
+  "reported_by": "analyst@example.com"
+}

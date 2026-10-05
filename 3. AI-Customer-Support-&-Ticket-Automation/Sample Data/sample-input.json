@@ -1,0 +1,9 @@
+{
+  "customer_name": "Jordan Lee",
+  "customer_email": "jordan.lee@example.com",
+  "description": "The application is not loading after login.",
+  "request_summary": "Application login issue",
+  "reason": "Customer cannot access the service.",
+  "request_id": "REQ-1001",
+  "department": "IT Support"
+}
