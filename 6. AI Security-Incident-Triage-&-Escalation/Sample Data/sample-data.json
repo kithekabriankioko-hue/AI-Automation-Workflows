@@ -1,0 +1,35 @@
+{
+  "description": "Example webhook payload for a simulated security incident. Use synthetic data only.",
+  "sample_inputs": [
+    {
+      "Incident ID": "INC-2026-0101",
+      "Time": "2026-10-23T09:15:00Z",
+      "Source": "Windows Security Log",
+      "Description": "Multiple failed sign-in attempts followed by a successful login to a restricted server account."
+    },
+    {
+      "Incident ID": "INC-2026-0102",
+      "Time": "2026-10-23T10:30:00Z",
+      "Source": "Physical Security Control Room",
+      "Description": "An individual attempted to enter a restricted area without the required authorization. No confirmed injury or damage reported."
+    },
+    {
+      "Incident ID": "INC-2026-0103",
+      "Time": "2026-10-23T11:05:00Z",
+      "Source": "Endpoint Monitoring",
+      "Description": "Endpoint protection reported a suspicious script execution. The alert requires analyst review to determine whether it is malicious."
+    }
+  ],
+  "expected_ai_output_schema": {
+    "Severity": "CRITICAL | HIGH | MEDIUM | LOW",
+    "Category": "FINANCE | IT | HR | SECURITY | MEDICAL | OTHER",
+    "Action": "LOG RESULTS | HUMAN_REVIEW",
+    "Summary": "Short factual summary of the incident",
+    "Reason": "Brief reason for the recommended action"
+  },
+  "notes": [
+    "Examples are synthetic and intended for demonstration only.",
+    "The AI output is a recommendation, not proof that an attack occurred.",
+    "Validate the actual JSON output against the configured Make.com data structure before downstream actions."
+  ]
+}

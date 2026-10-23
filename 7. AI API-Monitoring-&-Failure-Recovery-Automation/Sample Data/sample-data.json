@@ -1,0 +1,32 @@
+{
+  "description": "Example webhook payloads for a simulated API monitoring workflow. Use test endpoints only.",
+  "sample_inputs": [
+    {
+      "Description": "Scheduled API availability check"
+    },
+    {
+      "Description": "Monitoring run to test server-error retry handling"
+    },
+    {
+      "Description": "Monitoring run to test authentication-failure classification"
+    }
+  ],
+  "test_endpoint_examples": {
+    "success": "https://httpbin.org/status/200",
+    "authentication_failure": "https://httpbin.org/status/401",
+    "bad_request": "https://httpbin.org/status/400",
+    "temporary_server_error": "https://httpbin.org/status/503"
+  },
+  "expected_behavior": [
+    "HTTP 200 is classified as success and logged.",
+    "HTTP 401 is classified as an authentication failure and should not trigger the temporary-server-error retry branch.",
+    "HTTP 400 is classified as a bad request and should not trigger the temporary-server-error retry branch.",
+    "HTTP 503 follows the bounded retry path; after the final attempt, the final status is logged and an alert is sent."
+  ],
+  "notes": [
+    "The exported blueprint is configured to use the HTTP 200 test endpoint by default.",
+    "For demonstrations, change all four HTTP module URLs to the same test status endpoint, run one test, then restore all four to /status/200.",
+    "This is a portfolio demonstration using httpbin.org, not a production monitoring service.",
+    "Configure your own Make.com webhook, Google Sheets connection, Gmail connection, and alert recipient after importing the blueprint."
+  ]
+}
